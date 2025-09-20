@@ -7,33 +7,54 @@
 
 CGameFramework::CGameFramework()
 {
+	// GameFramework 클래스 각 멤버 변수 초기화
+
+	// SwapChain, Device를 사용하기 위한 객체
 	m_pdxgiFactory = NULL;
+	// 렌더링을 위한 BackBuffer, FrontBuffer를 교체해주는 객체
 	m_pdxgiSwapChain = NULL;
+	// GPU와 직접 통신하는 객체
 	m_pd3dDevice = NULL;
 
-	for (int i = 0; i < m_nSwapChainBuffers; i++) m_ppd3dSwapChainBackBuffers[i] = NULL;
+	// SwapChin의 내부 BackBuffer를 참조할 배열과 Index
+	for (int i = 0; i < m_nSwapChainBuffers; i++) 
+		m_ppd3dSwapChainBackBuffers[i] = NULL;
 	m_nSwapChainBufferIndex = 0;
 
+	// CommandList가 명령을 기록할 공간을 관리하는 객체
 	m_pd3dCommandAllocator = NULL;
+	// CommandList 자체를 쌓아두는 객체
+	// GPU가 CommandQueue에서 CommandList를 빼감 
 	m_pd3dCommandQueue = NULL;
+	// CommandAllocator가 할당한 공간에 명령을 기록하는 객체
 	m_pd3dCommandList = NULL;
 
+	// GPU가 사용할 RTV와 DSV를 담아둘 DescriptorHeap 
+	// RTV는 화면에 그릴 내용을 담기 위해 필요
+	// DSV는 화면에 그릴 내용의 깊이감을 표현하기 위해 필요
 	m_pd3dRtvDescriptorHeap = NULL;
 	m_pd3dDsvDescriptorHeap = NULL;
 
+	// 두 DescriptorHeap의 offset 크기
 	m_nRtvDescriptorIncrementSize = 0;
 	m_nDsvDescriptorIncrementSize = 0;
 
+	// CPU가 GPU의 작업을 기다릴 때 사용하는 이벤트 핸들
 	m_hFenceEvent = NULL;
+	// CPU, GPU 동기화용 객체
 	m_pd3dFence = NULL;
-	for (int i = 0; i < m_nSwapChainBuffers; i++) m_nFenceValues[i] = 0;
+	// SwapChain BackBuffer마다 사용할 Fence
+	for (int i = 0; i < m_nSwapChainBuffers; i++) 
+		m_nFenceValues[i] = 0;
 
+	// 윈도우 창 사이즈
 	m_nWndClientWidth = FRAME_BUFFER_WIDTH;
 	m_nWndClientHeight = FRAME_BUFFER_HEIGHT;
 
 	m_pScene = NULL;
 	m_pPlayer = NULL;
 
+	// 윈도우 창 제목에 사용할 문자열 준비
 	_tcscpy_s(m_pszFrameRate, _T("LabProject ("));
 }
 
@@ -43,9 +64,11 @@ CGameFramework::~CGameFramework()
 
 bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 {
+	// 윈도우 핸들 저장
 	m_hInstance = hInstance;
 	m_hWnd = hMainWnd;
 
+	// 
 	CreateDirect3DDevice();
 	CreateCommandQueueAndList();
 	CreateRtvAndDsvDescriptorHeaps();
@@ -503,6 +526,7 @@ void CGameFramework::MoveToNextFrame()
 
 //#define _WITH_PLAYER_TOP
 
+// Update + Render
 void CGameFramework::FrameAdvance()
 {    
 	m_GameTimer.Tick(0.0f);
@@ -577,4 +601,3 @@ void CGameFramework::FrameAdvance()
 	_stprintf_s(m_pszFrameRate + nLength, 70 - nLength, _T("(%4f, %4f, %4f)"), xmf3Position.x, xmf3Position.y, xmf3Position.z);
 	::SetWindowText(m_hWnd, m_pszFrameRate);
 }
-
