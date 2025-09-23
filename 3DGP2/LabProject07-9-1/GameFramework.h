@@ -13,6 +13,7 @@ public:
 	CGameFramework();
 	~CGameFramework();
 
+	// Init
 	bool OnCreate(HINSTANCE hInstance, HWND hMainWnd);
 	void OnDestroy();
 

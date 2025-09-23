@@ -1,7 +1,3 @@
-//-----------------------------------------------------------------------------
-// File: CScene.cpp
-//-----------------------------------------------------------------------------
-
 #include "stdafx.h"
 #include "Scene.h"
 
@@ -76,6 +72,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	CGameObject *pApacheModel = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/Apache.bin");
 	CApacheObject* pApacheObject = NULL;
 
+	// 계층구조 설정?
 	pApacheObject = new CApacheObject();
 	pApacheObject->SetChild(pApacheModel, true);
 	pApacheObject->OnInitialize();
@@ -170,11 +167,35 @@ ID3D12RootSignature *CScene::CreateGraphicsRootSignature(ID3D12Device *pd3dDevic
 	pd3dRootParameters[0].Descriptor.RegisterSpace = 0;
 	pd3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
+	// GameObject
+	// RootParameter를 32비트 상수로 설정
+	// 상수 버퍼 없이 RootSignature에 직접 값을 작성
 	pd3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	// RootSignature에 작성할 상수의 수
 	pd3dRootParameters[1].Constants.Num32BitValues = 32;
-	pd3dRootParameters[1].Constants.ShaderRegister = 2; //GameObject
+	// Shader에서 사용할 래지스터 번호 (b2)
+	pd3dRootParameters[1].Constants.ShaderRegister = 2;
+	// 래지스터 공간 설정
+	// std:: 같이 같은 이름의 래지스터를 충돌없이 사용하기 위한 것
 	pd3dRootParameters[1].Constants.RegisterSpace = 0;
+	// 모든 Shader에서 접근 가능하도록 설정
 	pd3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	{
+		// DescriptorTable
+		D3D12_DESCRIPTOR_RANGE pd3dDescriptorRanges[2];
+
+
+
+		// RootParameter를 DescriptorTable로 설정
+		pd3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		// RootSignature에 작성할 상수의 수
+		pd3dRootParameters[1].DescriptorTable.NumDescriptorRanges = 1;
+		// 
+		
+		// 모든 Shader에서 접근 가능하도록 설정
+		pd3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	}
 
 	pd3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	pd3dRootParameters[2].Descriptor.ShaderRegister = 4; //Lights
