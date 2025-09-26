@@ -7,11 +7,13 @@
 
 CGameFramework::CGameFramework()
 {
+	// Framework 멤버 변수 초기화
 	m_pdxgiFactory = NULL;
 	m_pdxgiSwapChain = NULL;
 	m_pd3dDevice = NULL;
 
-	for (int i = 0; i < m_nSwapChainBuffers; i++) m_ppd3dSwapChainBackBuffers[i] = NULL;
+	for (int i = 0; i < m_nSwapChainBuffers; i++) 
+		m_ppd3dSwapChainBackBuffers[i] = NULL;
 	m_nSwapChainBufferIndex = 0;
 
 	m_pd3dCommandAllocator = NULL;
@@ -23,14 +25,17 @@ CGameFramework::CGameFramework()
 
 	m_hFenceEvent = NULL;
 	m_pd3dFence = NULL;
-	for (int i = 0; i < m_nSwapChainBuffers; i++) m_nFenceValues[i] = 0;
+	for (int i = 0; i < m_nSwapChainBuffers; i++) 
+		m_nFenceValues[i] = 0;
 
+	// 윈도우 창 사이즈 설정
 	m_nWndClientWidth = FRAME_BUFFER_WIDTH;
 	m_nWndClientHeight = FRAME_BUFFER_HEIGHT;
 
 	m_pScene = NULL;
 	m_pPlayer = NULL;
 
+	// 윈도우 창 제목에 사용할 문자열 준비
 	_tcscpy_s(m_pszFrameRate, _T("LabProject ("));
 }
 
@@ -40,19 +45,28 @@ CGameFramework::~CGameFramework()
 
 bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
 {
+	// 프로그램 인스턴스, 윈도우 창 핸들 설정
 	m_hInstance = hInstance;
 	m_hWnd = hMainWnd;
 
+	// Deivce, CommandQueue/List, SwapChain 생성
+	// 순서를 지켜야 함
 	CreateDirect3DDevice();
 	CreateCommandQueueAndList();
+	CreateSwapChain();
+
+	// RTV, DSV DescriptorHeap 생성
+	// 순서 상관없음. DescriptorHeap을 사용하기 전에만 하면 됨.
 	CreateRtvAndDsvDescriptorHeaps();
 
-	CreateSwapChain();
 #ifndef _WITH_SWAPCHAIN_FULLSCREEN_STATE
+	// RTV 생성
 	CreateSwapChainRenderTargetViews();
 #endif
+	// DSV 생성
 	CreateDepthStencilView();
 
+	// Object 생성
 	BuildObjects();
 
 	return(true);
@@ -595,4 +609,3 @@ void CGameFramework::FrameAdvance()
 	m_GameTimer.GetFrameRate(m_pszFrameRate + 12, 37);
 	::SetWindowText(m_hWnd, m_pszFrameRate);
 }
-
