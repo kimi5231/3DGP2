@@ -38,9 +38,11 @@ public:
 	// 소멸자에서 할 일
 	void OnDestroy();
 
-	// SwapChain, Device, CommandQueue/List 생성
+	// SwapChain 생성
 	void CreateSwapChain();
+	// Device 생성, 이 함수 내에서 Factory, Aapter도 생성
 	void CreateDirect3DDevice();
+	// CommandQueue, List, Allocator 생성
 	void CreateCommandQueueAndList();
 
 	// RTV, DSV DescriptorHeap 생성
@@ -57,13 +59,17 @@ public:
     void BuildObjects();
     void ReleaseObjects();
 
+	// Input 처리
     void ProcessInput();
+	//
     void AnimateObjects();
+	//
     void FrameAdvance();
 
 	void WaitForGpuComplete();
 	void MoveToNextFrame();
 
+	// 마우스, 키보드, 윈도우 메세지 관리?
 	void OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	void OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	LRESULT CALLBACK OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
@@ -78,7 +84,7 @@ private:
 	int								m_nWndClientWidth;
 	int								m_nWndClientHeight;
         
-	// SwapChain, Device를 사용하기 위한 객체
+	// SwapChain, Device, Adapter를 사용하기 위한 객체
 	IDXGIFactory4					*m_pdxgiFactory = NULL;
 	// 렌더링을 위한 BackBuffer, FrontBuffer를 교체해주는 객체
 	IDXGISwapChain3					*m_pdxgiSwapChain = NULL;
@@ -88,7 +94,7 @@ private:
 	// 계단 현상 관련 변수
 	// MSAA 사용 여부
 	bool							m_bMsaa4xEnable = false;
-	// MSAA 품질 레벨
+	// MSAA 품질 레벨의 수
 	UINT							m_nMsaa4xQualityLevels = 0;
 
 	// SwapChine BackBuffer 수
@@ -123,7 +129,7 @@ private:
 
 	// CPU, GPU 동기화용 객체
 	ID3D12Fence						*m_pd3dFence = NULL;
-	// SwapChain BackBuffer마다 사용할 Fence들
+	// SwapChain BackBuffer마다의 목표 Fence값
 	UINT64							m_nFenceValues[m_nSwapChainBuffers];
 	// CPU가 GPU의 작업을 기다릴 때 사용하는 이벤트 핸들
 	HANDLE							m_hFenceEvent;
