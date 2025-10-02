@@ -431,6 +431,7 @@ void CGameFramework::ChangeSwapChainState()
 	// 
 	dxgiTargetParameters.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 	dxgiTargetParameters.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	// RenderTarget 사이즈 재설정
 	m_pdxgiSwapChain->ResizeTarget(&dxgiTargetParameters);
 
 	// 기존에 참조하던 BackBuffer 정보 삭제
@@ -438,6 +439,7 @@ void CGameFramework::ChangeSwapChainState()
 		if (m_ppd3dSwapChainBackBuffers[i])
 			m_ppd3dSwapChainBackBuffers[i]->Release();
 
+// 
 #ifdef _WITH_ONLY_RESIZE_BACKBUFFERS
 	DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
 	m_pdxgiSwapChain->GetDesc(&dxgiSwapChainDesc);
@@ -458,10 +460,11 @@ void CGameFramework::ChangeSwapChainState()
 
 void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
-	// 마우스 
+	// Scene에서 마우스 입력 처리
 	if (m_pScene)
 		m_pScene->OnProcessingMouseMessage(hWnd, nMessageID, wParam, lParam);
 	
+	// 마우스 입력에 따른 처리
 	switch (nMessageID)
 	{
 		case WM_LBUTTONDOWN:
@@ -483,15 +486,18 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 
 void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
+	// Scene에서 키보드 입력 처리
 	if (m_pScene)
 		m_pScene->OnProcessingKeyboardMessage(hWnd, nMessageID, wParam, lParam);
 	
+	// 키보드 입력에 따른 처리
 	switch (nMessageID)
 	{
 		case WM_KEYUP:
 			switch (wParam)
 			{
 				case VK_ESCAPE:
+					// 프로그램 종료
 					::PostQuitMessage(0);
 					break;
 				case VK_RETURN:
@@ -499,9 +505,11 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 				case VK_F1:
 				case VK_F2:
 				case VK_F3:
+					// 
 					m_pCamera = m_pPlayer->ChangeCamera((DWORD)(wParam - VK_F1 + 1), m_GameTimer.GetTimeElapsed());
 					break;
 				case VK_F9:
+					// SwapChineState 변경(전체화면O or 전체화면X)
 					ChangeSwapChainState();
 					break;
 				case 'S': //83
@@ -525,6 +533,7 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 
 LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
+	// Window 메세지 처리
 	switch (nMessageID)
 	{
 		case WM_ACTIVATE:
