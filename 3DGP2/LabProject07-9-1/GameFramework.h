@@ -88,3 +88,4 @@ private:
 
 	_TCHAR						m_pszFrameRate[70];
 };
+

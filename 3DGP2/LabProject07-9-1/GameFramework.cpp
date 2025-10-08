@@ -7,12 +7,11 @@
 
 CGameFramework::CGameFramework()
 {
-	m_pdxgiFactory = NULL;	
+	m_pdxgiFactory = NULL;
 	m_pdxgiSwapChain = NULL;
 	m_pd3dDevice = NULL;
 
-	for (int i = 0; i < m_nSwapChainBuffers; i++) 
-		m_ppd3dSwapChainBackBuffers[i] = NULL;
+	for (int i = 0; i < m_nSwapChainBuffers; i++) m_ppd3dSwapChainBackBuffers[i] = NULL;
 	m_nSwapChainBufferIndex = 0;
 
 	m_pd3dCommandAllocator = NULL;
@@ -27,15 +26,14 @@ CGameFramework::CGameFramework()
 
 	m_hFenceEvent = NULL;
 	m_pd3dFence = NULL;
-	for (int i = 0; i < m_nSwapChainBuffers; i++) 
-		m_nFenceValues[i] = 0;
+	for (int i = 0; i < m_nSwapChainBuffers; i++) m_nFenceValues[i] = 0;
 
 	m_nWndClientWidth = FRAME_BUFFER_WIDTH;
 	m_nWndClientHeight = FRAME_BUFFER_HEIGHT;
 
 	m_pScene = NULL;
 	m_pPlayer = NULL;
-	
+
 	_tcscpy_s(m_pszFrameRate, _T("LabProject ("));
 }
 
@@ -505,7 +503,6 @@ void CGameFramework::MoveToNextFrame()
 
 //#define _WITH_PLAYER_TOP
 
-// Update + Render
 void CGameFramework::FrameAdvance()
 {    
 	m_GameTimer.Tick(0.0f);
@@ -580,3 +577,4 @@ void CGameFramework::FrameAdvance()
 	_stprintf_s(m_pszFrameRate + nLength, 70 - nLength, _T("(%4f, %4f, %4f)"), xmf3Position.x, xmf3Position.y, xmf3Position.z);
 	::SetWindowText(m_hWnd, m_pszFrameRate);
 }
+
