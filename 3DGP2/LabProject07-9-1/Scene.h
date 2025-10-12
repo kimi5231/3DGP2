@@ -37,6 +37,21 @@ struct LIGHTS
 	int						m_nLights;
 };
 
+// Shader와 연결하기 위한 구조체
+struct MATERIAL
+{
+	XMFLOAT4 m_cAmbient;
+	XMFLOAT4 m_cDiffuse;
+	XMFLOAT4 m_cSpecular;
+	XMFLOAT4 m_cEmissive;
+};
+
+struct GAME_OBJECT_INFO
+{
+	XMFLOAT4X4 gmtxGameObject;
+	MATERIAL gMaterial;
+};
+
 class CScene
 {
 public:
@@ -59,7 +74,7 @@ public:
 
 	bool ProcessInput(UCHAR *pKeysBuffer);
     void AnimateObjects(float fTimeElapsed);
-    void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera=NULL);
+    void Render(ID3D12GraphicsCommandList *pd3dCommandList, ID3D12Device* pd3dDevice, CCamera *pCamera=NULL);
 
 	void ReleaseUploadBuffers();
 
@@ -80,4 +95,13 @@ public:
 	LIGHTS						*m_pcbMappedLights = NULL;
 
 	float						m_fElapsedTime = 0.0f;
+
+	// CBV DescriptorHeap
+	static ID3D12DescriptorHeap* CbvDescriptorHeap;
+
+	// ConstantBufferResource
+	ID3D12Resource* constantBufferResource = NULL;
+
+	// Resource로 만들 ConstantBuffer
+	GAME_OBJECT_INFO* constantBuffer = NULL;
 };

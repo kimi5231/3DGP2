@@ -5,6 +5,8 @@
 #include "stdafx.h"
 #include "Scene.h"
 
+ID3D12DescriptorHeap * CScene::CbvDescriptorHeap = NULL;
+
 CScene::CScene()
 {
 }
@@ -68,10 +70,24 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 
 	CMaterial::PrepareShaders(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
 
-	BuildDefaultLightsAndMaterials();
-
 	m_nGameObjects = 7;
-	m_ppGameObjects = new CGameObject*[m_nGameObjects];
+	m_ppGameObjects = new CGameObject * [m_nGameObjects];
+
+	// CBV DescriptorHeap 생성
+	// 생성할 DescriptorHeap의 정보를 담을 객체
+	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc{};
+	// DescriptorHeap에 넣을 Descriptor 수
+	descriptorHeapDesc.NumDescriptors = m_nGameObjects;
+	// CBV DescriptorHeap으로 설정
+	descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	// 추가 모드 설정 (Shader 참조 허용)
+	descriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	// 모든 GPU 노드 접근 가능
+	descriptorHeapDesc.NodeMask = 0;
+	// CBV DescriptorHeap 생성
+	pd3dDevice->CreateDescriptorHeap(&descriptorHeapDesc, __uuidof(ID3D12DescriptorHeap), (void**)&CbvDescriptorHeap);
+
+	BuildDefaultLightsAndMaterials();
 
 	CGameObject *pApacheModel = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/Apache.bin");
 	CApacheObject* pApacheObject = NULL;
@@ -141,6 +157,29 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	pTankObject->Rotate(0.0f, -90.0f, 0.0f);
 	m_ppGameObjects[6] = pTankObject;
 
+	// constantBuffer 생성
+	constantBuffer = new GAME_OBJECT_INFO[m_nGameObjects];
+	for (int i = 0; i < m_nGameObjects; i++)
+		constantBuffer->gmtxGameObject = m_ppGameObjects[i]->m_xmf4x4Transform;
+		
+	// constantBufferResource 생성
+	UINT ncbElementBytes = ((sizeof(GAME_OBJECT_INFO) + 255) & ~255);
+	constantBufferResource = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, ncbElementBytes * m_nGameObjects, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
+
+	constantBufferResource->Map(0, NULL, (void**)&constantBuffer);
+
+	// CBV 생성
+	D3D12_CPU_DESCRIPTOR_HANDLE cbvHandle = CbvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+
+	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc{};
+	cbvDesc.SizeInBytes = ncbElementBytes;
+	for (int i = 0; i < m_nGameObjects; i++)
+	{
+		cbvDesc.BufferLocation = constantBufferResource->GetGPUVirtualAddress() + (cbvDesc.SizeInBytes * i);
+		pd3dDevice->CreateConstantBufferView(&cbvDesc, cbvHandle);
+		cbvHandle.ptr += ::gnCbvSrvDescriptorIncrementSize;
+	}
+
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
 
@@ -163,6 +202,14 @@ ID3D12RootSignature *CScene::CreateGraphicsRootSignature(ID3D12Device *pd3dDevic
 {
 	ID3D12RootSignature *pd3dGraphicsRootSignature = NULL;
 
+	D3D12_DESCRIPTOR_RANGE descriptorRange[1];
+
+	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+	descriptorRange[0].NumDescriptors = 1;
+	descriptorRange[0].BaseShaderRegister = 2;
+	descriptorRange[0].RegisterSpace = 0;
+	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
 	D3D12_ROOT_PARAMETER pd3dRootParameters[3];
 
 	pd3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -170,10 +217,9 @@ ID3D12RootSignature *CScene::CreateGraphicsRootSignature(ID3D12Device *pd3dDevic
 	pd3dRootParameters[0].Descriptor.RegisterSpace = 0;
 	pd3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	pd3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-	pd3dRootParameters[1].Constants.Num32BitValues = 32;
-	pd3dRootParameters[1].Constants.ShaderRegister = 2; //GameObject
-	pd3dRootParameters[1].Constants.RegisterSpace = 0;
+	pd3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	pd3dRootParameters[1].DescriptorTable.NumDescriptorRanges = 1;
+	pd3dRootParameters[1].DescriptorTable.pDescriptorRanges = &descriptorRange[0];
 	pd3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 	pd3dRootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -275,9 +321,11 @@ void CScene::AnimateObjects(float fTimeElapsed)
 	}
 }
 
-void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)
+void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, ID3D12Device* pd3dDevice, CCamera *pCamera)
 {
 	pd3dCommandList->SetGraphicsRootSignature(m_pd3dGraphicsRootSignature);
+
+	pd3dCommandList->SetDescriptorHeaps(1, &CbvDescriptorHeap);
 
 	pCamera->SetViewportsAndScissorRects(pd3dCommandList);
 	pCamera->UpdateShaderVariables(pd3dCommandList);
@@ -291,6 +339,10 @@ void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera
 	{
 		if (m_ppGameObjects[i])
 		{
+			D3D12_GPU_DESCRIPTOR_HANDLE cbvHandle = CbvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+			pd3dCommandList->SetGraphicsRootDescriptorTable(1, cbvHandle);
+			cbvHandle.ptr += ::gnCbvSrvDescriptorIncrementSize;
+
 			m_ppGameObjects[i]->Animate(m_fElapsedTime, NULL);
 			m_ppGameObjects[i]->UpdateTransform(NULL);
 			m_ppGameObjects[i]->Render(pd3dCommandList, pCamera);
