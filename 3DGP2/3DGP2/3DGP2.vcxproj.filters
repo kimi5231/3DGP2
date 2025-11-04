@@ -29,6 +29,9 @@
     <ClInclude Include="targetver.h">
       <Filter>소스 파일\Default</Filter>
     </ClInclude>
+    <ClInclude Include="GameFramework.h">
+      <Filter>소스 파일\Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="3DGP2.rc">
@@ -49,6 +52,9 @@
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>소스 파일\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="GameFramework.cpp">
+      <Filter>소스 파일\Game</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

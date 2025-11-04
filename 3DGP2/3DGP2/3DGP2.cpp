@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "Resource.h"
+#include "GameFramework.h"
 
 #define MAX_LOADSTRING 100
 
@@ -20,8 +21,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    // TODO: 여기에 코드를 입력합니다.
-
     // 전역 문자열을 초기화합니다.
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_MY3DGP2, szWindowClass, MAX_LOADSTRING);
@@ -37,6 +36,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     MSG msg;
 
+    GameFramework* gameFramework = new GameFramework();
+
     // 기본 메시지 루프입니다:
     while (GetMessage(&msg, nullptr, 0, 0))
     {
@@ -44,6 +45,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
+
+            gameFramework->Update();
+            gameFramework->Render();
         }
     }
 
