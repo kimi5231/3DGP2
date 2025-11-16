@@ -13,9 +13,9 @@ public:
 
 private:
 	void CreateDevice();
-	void CreateSwapChine();
+	void CreateSwapChain();
 	void CreateCommandQueueAndList();
-	void CreateRtvAndDsvHeaps();
+	void CreateRtvDsvDescriptorHeaps();
 	void CreateRenderTargetViews();
 	void CreateDepthStencilView();
 
@@ -27,47 +27,63 @@ private:
 	Scene* _scene;
 
 private:
-	HWND _hwnd;
-
-	// directX 관련
+	// 윈도우 창 핸들
+	HWND _hwnd{};
+	
+	// Device, Adapter, SwapChain를 사용하기 위한 객체
 	ComPtr<IDXGIFactory4> _factory{};
-	ComPtr<IDXGISwapChain3> _swapChain{};
+	// GPU와 직접 통신하는 객체 
 	ComPtr<ID3D12Device> _device{};
 
-	// MSAA 다중 샘플링 활성화 및 다중 샘플링 레벨 설정
-	bool msaa4x_enabled{};
-	UINT msaa4x_quality_level{};
+	// 렌더링을 위한 BackBuffer, FrontBuffer를 교체해주는 객체
+	ComPtr<IDXGISwapChain3> _swapChain{};
+	// SwapChine BackBuffer 수
+	static const UINT _swapChainBufferCount{2};
+	// 현재 사용 중인 SwapChain의 BackBuffer 위치를 기록하는 변수
+	UINT _swapChainBufferIndex{};
+	// SwapChin의 내부 BackBuffer를 참조할 배열
+	ComPtr<ID3D12Resource> _swapChainBackBuffers[_swapChainBufferCount]{};
 
-	static const UINT swap_chain_buffer_num{ 2 };
-	UINT swap_chain_buffer_index{};
+	// CommandList가 명령을 기록할 공간을 관리하는 객체
+	ComPtr<ID3D12CommandAllocator> _commandAllocator{};
+	// CommandList 자체를 쌓아두는 객체
+	// GPU가 CommandQueue에서 CommandList를 빼감
+	ComPtr<ID3D12CommandQueue> _commandQueue{};
+	// CommandAllocator가 할당한 공간에 명령을 기록하는 객체
+	ComPtr<ID3D12GraphicsCommandList> _commandList{};
 
-	// 렌더 타겟 버퍼, 서술자 힙 인터페이스 포인터, 렌더 타겟 서술자 원소 크기
-	ComPtr<ID3D12Resource> render_target_buffers[swap_chain_buffer_num]{};
-	ComPtr<ID3D12DescriptorHeap> rtv_descriptor_heap{};
+	// GPU가 사용할 RTV를 담아둘 DescriptorHeap 
+	// RTV: GPU가 SwapChain BackBuffer에 접근하기 위해 필요한 View
+	ComPtr<ID3D12DescriptorHeap> _rtvDescriptorHeap{};
+	//
 	UINT rtv_increment_size{};
 
-	// 깊이-스텐실 버퍼, 서술자 힙 인터페이스 포인터, 깊이-스텐실 서술자 원소 크기
-	ComPtr<ID3D12Resource> depth_stencil_buffer{};
-	ComPtr<ID3D12DescriptorHeap> dsv_descriptor_heap{};
+	// DSV와 연결될 Buffer
+	ComPtr<ID3D12Resource> _depthStencilBuffer{};
+	// GPU가 사용할 DSV를 담아둘 DescriptorHeap
+	// DSV: GPU가 DepthStencilBuffer에 접근하기 위해 필요한 View
+	ComPtr<ID3D12DescriptorHeap> _dsvDescriptorHeap{};
+	//
 	UINT dsv_increment_size{};
 
-	// 명령 큐, 명형 할당자, 명령 리스트 인터페이스 포인터
-	ComPtr<ID3D12CommandQueue> _commandQueue{};
-	ComPtr<ID3D12CommandAllocator> _commandAllocator{};
-	ComPtr<ID3D12GraphicsCommandList> _commandList{};
+	// 계단 현상 관련 변수
+	// MSAA 사용 여부
+	bool _msaa4xEnable{};
+	// MSAA 품질 레벨의 수
+	UINT _msaa4xQualityLevel{};
+
+	// CPU, GPU 동기화용 객체
+	ComPtr<ID3D12Fence> _fence{};
+	// SwapChain BackBuffer마다의 목표 Fence값
+	UINT64 _fenceValues[_swapChainBufferCount]{};
+	// CPU가 GPU의 작업을 기다릴 때 사용하는 이벤트 핸들
+	HANDLE _fenceEvent{};
+
+
 
 	// 그래픽스 파이프라인 상태 객체에 대한 인터페이스 포인터
 	ComPtr<ID3D12PipelineState> pipeline_state{};
-
-	// 펜스 인터페이스 포인터, 펜스 값, 이벤트 핸들
-	ComPtr<ID3D12Fence> fence{};
-	// 후면 버퍼마다 펜스값 관리
-	UINT64 fence_value[swap_chain_buffer_num]{};
-	HANDLE fence_event{};
-
 	// 뷰포트와 씨저 사각형
 	D3D12_VIEWPORT viewport{};
 	D3D12_RECT scissor_rect{};
-
-	Scene* now_scene{};
 };
