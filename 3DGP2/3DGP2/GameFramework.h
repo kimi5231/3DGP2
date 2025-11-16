@@ -12,15 +12,17 @@ public:
 	void Render();
 
 private:
+	// Device 생성, 이 함수 내에서 Factory, Aapter도 생성
 	void CreateDevice();
-	void CreateSwapChain();
 	void CreateCommandQueueAndList();
+	void CreateSwapChain();
+
+	// 
 	void CreateRtvDsvDescriptorHeaps();
 	void CreateRenderTargetViews();
 	void CreateDepthStencilView();
 
 	void WaitForGpuComplete();
-
 	void MoveToNextFrame();
 
 private:
@@ -55,16 +57,14 @@ private:
 	// GPU가 사용할 RTV를 담아둘 DescriptorHeap 
 	// RTV: GPU가 SwapChain BackBuffer에 접근하기 위해 필요한 View
 	ComPtr<ID3D12DescriptorHeap> _rtvDescriptorHeap{};
-	//
-	UINT rtv_increment_size{};
+	// RTV offset값
+	UINT _rtvDescriptorIncrementSize{};
 
-	// DSV와 연결될 Buffer
-	ComPtr<ID3D12Resource> _depthStencilBuffer{};
 	// GPU가 사용할 DSV를 담아둘 DescriptorHeap
 	// DSV: GPU가 DepthStencilBuffer에 접근하기 위해 필요한 View
 	ComPtr<ID3D12DescriptorHeap> _dsvDescriptorHeap{};
-	//
-	UINT dsv_increment_size{};
+	// DSV와 연결될 Buffer
+	ComPtr<ID3D12Resource> _depthStencilBuffer{};
 
 	// 계단 현상 관련 변수
 	// MSAA 사용 여부
