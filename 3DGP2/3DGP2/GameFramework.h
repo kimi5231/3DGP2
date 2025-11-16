@@ -81,8 +81,6 @@ private:
 
 
 
-	// 그래픽스 파이프라인 상태 객체에 대한 인터페이스 포인터
-	ComPtr<ID3D12PipelineState> pipeline_state{};
 	// 뷰포트와 씨저 사각형
 	D3D12_VIEWPORT viewport{};
 	D3D12_RECT scissor_rect{};

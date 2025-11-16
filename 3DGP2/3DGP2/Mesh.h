@@ -1,4 +1,5 @@
-class CVertex {
+class CVertex 
+{
 public:
 	CVertex() : position{ XMFLOAT3(0.0f, 0.0f, 0.0f) } {}
 	CVertex(float x, float y, float z) : position{ XMFLOAT3(x, y, z) } {}

@@ -17,7 +17,6 @@ GameFramework::GameFramework(HWND hwnd)
 
 	_commandList->Reset(_commandAllocator.Get(), NULL);
 
-	// 씬 객체 생성
 	_scene = new Scene(_device, _commandList);
 	
 	// 그래픽 명령 리스트 명령 큐에 추가
@@ -94,7 +93,7 @@ void GameFramework::Update()
 	// 스왑체인 프리젠트. 현재 렌더 타겟의 내용이 전면 버퍼로 옮겨지고 렌더 타겟 인덱스가 바뀜
 	_swapChain->Present(0, 0);
 
-	MoveToNextFrame();
+	//MoveToNextFrame();
 }
 
 void GameFramework::Render()
@@ -296,48 +295,75 @@ void GameFramework::CreateRtvDsvDescriptorHeaps()
 
 void GameFramework::CreateRenderTargetViews()
 {
-	// 스왑체인의 각 후면 버퍼에 대한 렌더 타겟 뷰 생성
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvCPUDescriptorHandle = _rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	for (UINT i = 0; i < _swapChainBufferCount; ++i) {
+	// RTV DescriptorHeap에서 핸들 얻어오기
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvDescriptorCPUHandle = _rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	for (UINT i = 0; i < _swapChainBufferCount; ++i) 
+	{
+		// SwapChain BackBuffer를 미리 만들어둔 배열에 연결
 		_swapChain->GetBuffer(i, __uuidof(ID3D12Resource), (void**)&_swapChainBackBuffers[i]);
-		_device->CreateRenderTargetView(_swapChainBackBuffers[i].Get(), NULL, rtvCPUDescriptorHandle);
-		rtvCPUDescriptorHandle.ptr += _rtvDescriptorIncrementSize;
+		// RTV를 생성하고 SwapChain BackBuffer를 참조하는 배열에 연결 및 DescriptorHeap에 등록
+		_device->CreateRenderTargetView(_swapChainBackBuffers[i].Get(), NULL, rtvDescriptorCPUHandle);
+		// RTV offset만큼 이동
+		rtvDescriptorCPUHandle.ptr += _rtvDescriptorIncrementSize;
 	}
 }
 
 void GameFramework::CreateDepthStencilView()
 {
+	// 생성할 DSV의 정보를 담을 객체
 	D3D12_RESOURCE_DESC resourceDesc;
+	// 2차원 View로 설정
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	// GPU 메모리 리소스 정렬 방식 (Direct3D가 알아서)
 	resourceDesc.Alignment = 0;
+	// DSV 크기 지정
 	resourceDesc.Width = ScreenWidth;
 	resourceDesc.Height = ScreenHeight;
+	// 2D 텍스쳐: 배열의 크기 지정, 3D 텍스쳐: 3D 텍스쳐를 구성하는 슬라이스 수 지정
 	resourceDesc.DepthOrArraySize = 1;
+	// Mipmap 레벨 지정
 	resourceDesc.MipLevels = 1;
+	// DSV 포맷 
 	resourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	// MSAA 샘플 수
 	resourceDesc.SampleDesc.Count = (_msaa4xEnable) ? 4 : 1;
+	// MSAA 품질 레벨
 	resourceDesc.SampleDesc.Quality = (_msaa4xEnable) ? (_msaa4xQualityLevel - 1) : 0;
+	// 텍스쳐의 메모리 레이아웃 (Direct3D가 알아서)
 	resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	// 추가 모드 설정 (DSV를 Depth Stencil Buffer 사용)
 	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
-	D3D12_HEAP_PROPERTIES heapProperties{};
+	// 리소스를 GPU 메모리 어느 Heap에 저장할 지에 대한 설정 정보를 담을 객체
+	D3D12_HEAP_PROPERTIES heapProperties;
+	// 메모리 0으로 초기화
+	::ZeroMemory(&heapProperties, sizeof(D3D12_HEAP_PROPERTIES));
+	// Heap 종류 (GPU 전용 메모리)
 	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+	// CPU 접근 방법 (Direct3D가 알아서)
 	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+	// GPU 메모리 풀 중 어떤 걸 우선 사용하지 지정 (Direct3D가 알아서)
 	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+	// 어떤 GPU를 사용할 지 지정
 	heapProperties.CreationNodeMask = 1;
+	// 어떤 GPU가 접근할 수 있는지 지정
 	heapProperties.VisibleNodeMask = 1;
 
+	// DSV 초기화할 때 사용할 정보를 담을 객체
 	D3D12_CLEAR_VALUE clearValue;
+	// 초기화할 리소스 포맷 (DSV)
 	clearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	// 초기화로 설정할 Depth, Stencil 값
 	clearValue.DepthStencil.Depth = 1.0f;
 	clearValue.DepthStencil.Stencil = 0;
-	// 버퍼 생성
+
+	// GPU Heap에 리소스 생성 후 커밋
 	_device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &clearValue, __uuidof(ID3D12Resource), (void**)&_depthStencilBuffer);
 
-	// 뷰 생성
-	// 힙 시작 핸들 값
-	D3D12_CPU_DESCRIPTOR_HANDLE dsvCPUDesctiptorHandle = _dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	_device->CreateDepthStencilView(_depthStencilBuffer.Get(), NULL, dsvCPUDesctiptorHandle);
+	// DSV DescriptorHeap 핸들 얻어오기
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvDescriptorCPUHandle = _dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	// DSV를 생성하고 DSV DescriptorHeap에 등록
+	_device->CreateDepthStencilView(_depthStencilBuffer.Get(), NULL, dsvDescriptorCPUHandle);
 }
 
 void GameFramework::WaitForGpuComplete()

@@ -25,8 +25,8 @@
 #define ScreenHeight 600
 
 using namespace DirectX;
-
 using Microsoft::WRL::ComPtr;
+
 using ShaderShared = std::shared_ptr<class Shader>;
 using GameObjectShared = std::shared_ptr<class GameObject>;
 
