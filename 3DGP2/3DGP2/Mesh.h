@@ -27,6 +27,9 @@ public:
 
 	void ReleaseUploadBuffer();
 
+public:
+	void SetVertexCount(UINT count) { _vertexCount = count; }
+
 private:
 	UINT _vertexCount{};
 	// 정점 간의 간격

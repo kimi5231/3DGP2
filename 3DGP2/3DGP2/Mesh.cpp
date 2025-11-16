@@ -21,7 +21,6 @@ void Mesh::Render(ComPtr<ID3D12GraphicsCommandList> commandList)
 
 void Mesh::SetTriangle(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, Vertex* vertices)
 {
-	_vertexCount = 3;
 	_stride = sizeof(Vertex);
 	_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
