@@ -4,20 +4,25 @@
 #include "Shader.h"
 #include "Mesh.h"
 
+
 Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList)
 {
 	ShaderShared shader = std::make_shared<Shader>();
 	shader->CreateShader(device);
+	shader->CreateShaderResourceView(device, commandList);
 	_shaders.push_back(shader);
 
 	Mesh* mesh = new Mesh();
-	Vertex vertices[] = {
-		Vertex(XMFLOAT3(-1.0f, 1.0f, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)),
-		Vertex(XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT4(0.0f,1.0f, 0.0f, 1.0f)),
-		Vertex(XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT4(Colors::Blue)),
-		Vertex(XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)),
-		Vertex(XMFLOAT3(1.0f, -1.0f, 0.0f), XMFLOAT4(Colors::Blue)),
-		Vertex(XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT4(0.0f,1.0f, 0.0f, 1.0f))
+	Vertex vertices[] = 
+	{
+		// 첫번째 삼각형
+		Vertex(XMFLOAT3(-1.0f, 1.0f, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 0.0f)),
+		Vertex(XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT4(0.0f,1.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f)),
+		Vertex(XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT4(Colors::Blue), XMFLOAT2(0.0f, 1.0f)),
+		// 두번째 삼각형
+		Vertex(XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f)),
+		Vertex(XMFLOAT3(1.0f, -1.0f, 0.0f), XMFLOAT4(Colors::Blue), XMFLOAT2(1.0f, 1.0f)),
+		Vertex(XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT4(0.0f,1.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 1.0f))
 	};
 	mesh->SetVertexCount(6);
 	mesh->SetTriangle(device, commandList, vertices);

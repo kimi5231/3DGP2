@@ -18,7 +18,7 @@ GameFramework::GameFramework(HWND hwnd)
 	_commandList->Reset(_commandAllocator.Get(), NULL);
 
 	_scene = new Scene(_device, _commandList);
-	
+
 	_commandList->Close();
 	ID3D12CommandList* commandLists[] = { _commandList.Get() };
 	_commandQueue->ExecuteCommandLists(1, commandLists);
@@ -35,7 +35,6 @@ GameFramework::~GameFramework()
 
 void GameFramework::Update()
 {
-	// 명령 리셋
 	_commandAllocator->Reset();
 	_commandList->Reset(_commandAllocator.Get(), NULL);
 
@@ -71,10 +70,9 @@ void GameFramework::Update()
 	// 원하는 값으로 깊이 스텐실 지우기
 	_commandList->ClearDepthStencilView(dsvCPUDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0F, 0, 0, NULL);
 
-	// 렌더링 코드
-	if (_scene) _scene->Render(_commandList.Get());
+	if (_scene) 
+		_scene->Render(_commandList.Get());
 
-	// 현재 렌더 타겟에 대한 렌더링이 끝나기를 기다림. GPU가 버퍼를 더 이상 사용하지 않으면 렌더 타겟 -> 프레젠트 상태로 변경
 	resourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	resourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 	resourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
@@ -85,10 +83,12 @@ void GameFramework::Update()
 	ID3D12CommandList* commandLists[]{ _commandList.Get() };
 	_commandQueue->ExecuteCommandLists(1, commandLists);
 
-	WaitForGpuComplete();
+	
 
 	// 스왑체인 프리젠트. 현재 렌더 타겟의 내용이 전면 버퍼로 옮겨지고 렌더 타겟 인덱스가 바뀜
 	_swapChain->Present(0, 0);
+
+	WaitForGpuComplete();
 
 	//MoveToNextFrame();
 }

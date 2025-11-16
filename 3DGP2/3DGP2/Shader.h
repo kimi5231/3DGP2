@@ -14,6 +14,9 @@ public:
 
 	virtual void CreateShader(ComPtr<ID3D12Device> device);
 
+	void CreateCbvSrvDescriptorHeaps(ComPtr<ID3D12Device> device);
+	void CreateShaderResourceView(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
+	
 	// piplineState 설정을 위한 함수
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader(ID3DBlob** shaderBlob);
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader(ID3DBlob** shaderBlob);
@@ -33,4 +36,6 @@ public:
 private:
 	ComPtr<ID3D12RootSignature> _graphicsRootSignature{};
 	ComPtr<ID3D12PipelineState> _pipelineState{};
+
+	ComPtr<ID3D12DescriptorHeap> _srvDescriptorHeap{};
 };

@@ -18,6 +18,9 @@
     <Filter Include="소스 파일\Main">
       <UniqueIdentifier>{105efac1-7d53-4fe1-b6c9-b77f2b5bb86b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Shader">
+      <UniqueIdentifier>{55c9eeec-058e-40b4-9fed-06af1b9f427d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resource.h">
@@ -43,6 +46,12 @@
     </ClInclude>
     <ClInclude Include="Shader.h">
       <Filter>소스 파일\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="d3dx12.h">
+      <Filter>소스 파일\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="DDSTextureLoader12.h">
+      <Filter>소스 파일\Main</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -80,10 +89,13 @@
     <ClCompile Include="Shader.cpp">
       <Filter>소스 파일\Game</Filter>
     </ClCompile>
+    <ClCompile Include="DDSTextureLoader12.cpp">
+      <Filter>소스 파일\Main</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader.hlsl">
-      <Filter>소스 파일\Game</Filter>
+      <Filter>소스 파일\Shader</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

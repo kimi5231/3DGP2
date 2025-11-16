@@ -15,18 +15,51 @@ void Shader::Update()
 
 void Shader::Render(ComPtr<ID3D12GraphicsCommandList> commandList)
 {
+	commandList->SetGraphicsRootSignature(_graphicsRootSignature.Get());
+	commandList->SetDescriptorHeaps(1, _srvDescriptorHeap.GetAddressOf());
+	commandList->SetGraphicsRootDescriptorTable(0, _srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	commandList->SetPipelineState(_pipelineState.Get());
 }
 
 void Shader::CreateGraphicsRootSignature(ComPtr<ID3D12Device> device)
 {
+	D3D12_DESCRIPTOR_RANGE descriptorRanges;
+	descriptorRanges.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	descriptorRanges.NumDescriptors = 1;
+	descriptorRanges.BaseShaderRegister = 0;
+	descriptorRanges.RegisterSpace = 0;
+	descriptorRanges.OffsetInDescriptorsFromTableStart = 0;
+
+	D3D12_ROOT_PARAMETER rootParameters[1];
+	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[0].DescriptorTable.NumDescriptorRanges = 1;
+	rootParameters[0].DescriptorTable.pDescriptorRanges = &descriptorRanges;
+	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	D3D12_STATIC_SAMPLER_DESC samplerDesc{};
+	::ZeroMemory(&samplerDesc, sizeof(D3D12_STATIC_SAMPLER_DESC));
+	samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	samplerDesc.MipLODBias = 0;
+	samplerDesc.MaxAnisotropy = 1;
+	samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	samplerDesc.MinLOD = 0;
+	samplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
+	samplerDesc.ShaderRegister = 0;
+	samplerDesc.RegisterSpace = 0;
+	samplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	D3D12_ROOT_SIGNATURE_FLAGS d3dRootSignatureFlags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS | D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS | D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
+	
 	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-	rootSignatureDesc.NumParameters = 0;
-	rootSignatureDesc.pParameters = nullptr;
-	rootSignatureDesc.NumStaticSamplers = 0;
-	rootSignatureDesc.pStaticSamplers = nullptr;
-	// IA에서 Vertex Buffer를 사용할 수 있도록 허용
-	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+	::ZeroMemory(&rootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
+	rootSignatureDesc.NumParameters = _countof(rootParameters);
+	rootSignatureDesc.pParameters = rootParameters;
+	rootSignatureDesc.NumStaticSamplers = 1;
+	rootSignatureDesc.pStaticSamplers = &samplerDesc;
+	rootSignatureDesc.Flags = d3dRootSignatureFlags;
 
 	ComPtr<ID3DBlob> signatureBlob;
 	ComPtr<ID3DBlob> errorBlob;
@@ -67,6 +100,32 @@ void Shader::CreateShader(ComPtr<ID3D12Device> device)
 
 	if (pipelineStateDesc.InputLayout.pInputElementDescs)
 		delete[] pipelineStateDesc.InputLayout.pInputElementDescs;
+}
+
+void Shader::CreateCbvSrvDescriptorHeaps(ComPtr<ID3D12Device> device)
+{
+	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc;
+	descriptorHeapDesc.NumDescriptors = 1;
+	descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	descriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	descriptorHeapDesc.NodeMask = 0;
+	device->CreateDescriptorHeap(&descriptorHeapDesc, __uuidof(ID3D12DescriptorHeap), (void**)&_srvDescriptorHeap);
+}
+
+void Shader::CreateShaderResourceView(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList)
+{
+	CreateCbvSrvDescriptorHeaps(device);
+
+	ComPtr<ID3D12Resource> texture;
+	ComPtr<ID3D12Resource> textureUpload;
+	texture = CreateTextureResourceFromDDSFile(device.Get(), commandList.Get(), (wchar_t*)(L"Stone01.dds"), textureUpload.GetAddressOf(), D3D12_RESOURCE_STATE_GENERIC_READ);
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Format = texture->GetDesc().Format;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels = texture->GetDesc().MipLevels;
+	device->CreateShaderResourceView(texture.Get(), &srvDesc, _srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 }
 
 D3D12_SHADER_BYTECODE Shader::CreateVertexShader(ID3DBlob** shaderBlob)
@@ -139,11 +198,12 @@ D3D12_DEPTH_STENCIL_DESC Shader::CreateDepthStencilState()
 
 D3D12_INPUT_LAYOUT_DESC Shader::CreateInputLayout()
 {
-	const UINT inputElementDescNum = 2;
+	const UINT inputElementDescNum = 3;
 	D3D12_INPUT_ELEMENT_DESC* inputElementDescs = new D3D12_INPUT_ELEMENT_DESC[inputElementDescNum];
 
 	inputElementDescs[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 	inputElementDescs[1] = { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputElementDescs[2] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 28, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc;
 	inputLayoutDesc.pInputElementDescs = inputElementDescs;
