@@ -1,52 +1,44 @@
-class CVertex 
+struct Vertex
 {
 public:
-	CVertex() : position{ XMFLOAT3(0.0f, 0.0f, 0.0f) } {}
-	CVertex(float x, float y, float z) : position{ XMFLOAT3(x, y, z) } {}
-	CVertex(XMFLOAT3 Position) : position{ Position } {}
+	XMFLOAT3 pos{};
+	XMFLOAT4 color{};
 
-	CVertex(const CVertex&);
-	CVertex& operator=(const CVertex&);
-	CVertex(CVertex&&);
-	CVertex& operator=(CVertex&&);
-protected:
-	XMFLOAT3 position{};
-};
-
-class CDiffusedVertex : public CVertex
-{
 public:
-	CDiffusedVertex() : CVertex(), diffuse{ XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f) } {}
-	CDiffusedVertex(XMFLOAT3 Position, XMFLOAT4 Diffuse) : CVertex(Position), diffuse(Diffuse) {}
-	CDiffusedVertex(float x, float y, float z, XMFLOAT4 Diffuse) : CVertex(x, y, z), diffuse{ Diffuse } {}
-protected:
-	// 정점의 색상
-	XMFLOAT4 diffuse;
+	Vertex& operator=(const Vertex& other)
+	{
+		pos = other.pos;
+		color = other.color;
+		return *this;
+	}
 };
 
 class Mesh
 {
 public:
-	Mesh(ComPtr<ID3D12Device>, ComPtr<ID3D12GraphicsCommandList>);
+	Mesh();
+	~Mesh();
+
+public:
+	virtual void Render(ComPtr<ID3D12GraphicsCommandList>);
+
+public:
+	void SetTriangle(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, Vertex* vertices);
 
 	void ReleaseUploadBuffer();
 
-	virtual void Render(ComPtr<ID3D12GraphicsCommandList>);
-protected:
-	ComPtr<ID3D12Resource> vertex_buffer{};
-	ComPtr<ID3D12Resource> vertex_upload_buffer{};
+private:
+	UINT _vertexCount{};
+	// 정점 간의 간격
+	UINT _stride{};
+	D3D12_PRIMITIVE_TOPOLOGY _primitiveTopology{ D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST };
+	
+	ComPtr<ID3D12Resource> _vertexBuffer{};
+	ComPtr<ID3D12Resource> _uploadBuffer{};
+	D3D12_VERTEX_BUFFER_VIEW _vertexBufferView{};
 
-	D3D12_VERTEX_BUFFER_VIEW vertex_buffer_view{};
-
-	D3D12_PRIMITIVE_TOPOLOGY primitive_topology{ D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST };
-	UINT slot_num{};
-	UINT vertex_num{};
-	UINT stride{};
-	UINT offset{};
-};
-
-class CTriangleMesh : public Mesh
-{
-public:
-	CTriangleMesh(ComPtr<ID3D12Device>, ComPtr<ID3D12GraphicsCommandList>);
+	// 리소스를 연결할 슬롯 번호
+	UINT _slotNum{};
+	// 정점 버퍼 시작 위치
+	UINT _offset{};
 };

@@ -1,70 +1,45 @@
 #include "pch.h"
 #include "Mesh.h"
 
-CVertex::CVertex(const CVertex& rhs) : position{ rhs.position }
-{
-
-}
-
-CVertex& CVertex::operator=(const CVertex& rhs)
-{
-	if (this == &rhs) return *this;
-	position = rhs.position;
-
-	return *this;
-}
-
-CVertex::CVertex(CVertex&& other) : position{ std::move(other.position) }
+Mesh::Mesh()
 {
 }
 
-CVertex& CVertex::operator=(CVertex&& other)
+Mesh::~Mesh()
 {
-	if (this == &other) return *this;
-	position = std::move(other.position);
-
-	return *this;
-}
-
-Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList)
-{
-}
-
-void Mesh::ReleaseUploadBuffer()
-{
-	if (vertex_upload_buffer) 
-		vertex_upload_buffer.Reset();
-	vertex_upload_buffer = nullptr;
 }
 
 void Mesh::Render(ComPtr<ID3D12GraphicsCommandList> commandList)
 {
 	// 프리미티브 유형 설정
-	commandList->IASetPrimitiveTopology(primitive_topology);
-	// 정점 버퍼 뷰 설정
-	commandList->IASetVertexBuffers(slot_num, 1, &vertex_buffer_view);
-	// 렌더링(입력 조립기 작동)
-	commandList->DrawInstanced(vertex_num, 1, offset, 0);
+	commandList->IASetPrimitiveTopology(_primitiveTopology);
+	// GPU에게 정점 정보 넘기기
+	commandList->IASetVertexBuffers(_slotNum, 1, &_vertexBufferView);
+	// 렌더링
+	commandList->DrawInstanced(_vertexCount, 1, _offset, 0);
 }
 
-CTriangleMesh::CTriangleMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) :
-	Mesh(device, commandList)
+void Mesh::SetTriangle(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, Vertex* vertices)
 {
-	vertex_num = 3;
-	stride = sizeof(CDiffusedVertex);
-	primitive_topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	_vertexCount = 3;
+	_stride = sizeof(Vertex);
+	_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-	CDiffusedVertex vertices[] = {
-		CDiffusedVertex(XMFLOAT3(0.0f, 0.5, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)),
-		CDiffusedVertex(XMFLOAT3(0.5f, -0.5, 0.0f), XMFLOAT4(0.0f,1.0f, 0.0f, 1.0f)),
-		CDiffusedVertex(XMFLOAT3(-0.5f, -0.5, 0.0f), XMFLOAT4(Colors::Blue))
-	};
-
-	// 삼각형 메쉬를 리소스로 생성
-	vertex_buffer = CreateBufferResource(device, commandList, vertices, stride * vertex_num, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, vertex_upload_buffer.GetAddressOf());
+	// 정점 버퍼 생성
+	_vertexBuffer = CreateBufferResource(device, commandList, vertices, _stride * _vertexCount, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, _uploadBuffer.GetAddressOf());
 
 	// 정점 버퍼 뷰 설정
-	vertex_buffer_view.BufferLocation = vertex_buffer->GetGPUVirtualAddress();
-	vertex_buffer_view.StrideInBytes = stride;
-	vertex_buffer_view.SizeInBytes = stride * vertex_num;
+	_vertexBufferView.BufferLocation = _vertexBuffer->GetGPUVirtualAddress();
+	_vertexBufferView.StrideInBytes = _stride;
+	_vertexBufferView.SizeInBytes = _stride * _vertexCount;
+
+	_slotNum = 0;
+	_offset = 0;
+}
+
+void Mesh::ReleaseUploadBuffer()
+{
+	if (_uploadBuffer) 
+		_uploadBuffer.Reset();
+	_uploadBuffer = nullptr;
 }

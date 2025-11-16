@@ -19,17 +19,14 @@ GameFramework::GameFramework(HWND hwnd)
 
 	_scene = new Scene(_device, _commandList);
 	
-	// 그래픽 명령 리스트 명령 큐에 추가
 	_commandList->Close();
 	ID3D12CommandList* commandLists[] = { _commandList.Get() };
 	_commandQueue->ExecuteCommandLists(1, commandLists);
 
-	//그래픽 명령 리스트들이 모두 실행될 때까지 기다린다.
 	WaitForGpuComplete();
 
-	//그래픽 리소스들을 생성하는 과정에 생성된 업로드 버퍼들을 소멸시킨다.
-	if (_scene) _scene->ReleaseUploadBuffers();
-
+	if (_scene) 
+		_scene->ReleaseUploadBuffers();
 }
 
 GameFramework::~GameFramework()

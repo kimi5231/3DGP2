@@ -10,9 +10,16 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	shader->CreateShader(device);
 	_shaders.push_back(shader);
 
+	Mesh* mesh = new Mesh();
+	Vertex vertices[] = {
+		Vertex(XMFLOAT3(0.0f, 0.5, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)),
+		Vertex(XMFLOAT3(0.5f, -0.5, 0.0f), XMFLOAT4(0.0f,1.0f, 0.0f, 1.0f)),
+		Vertex(XMFLOAT3(-0.5f, -0.5, 0.0f), XMFLOAT4(Colors::Blue))
+	};
+	mesh->SetTriangle(device, commandList, vertices);
+
 	GameObjectShared object = std::make_shared<GameObject>();
-	CTriangleMesh* pTriangleMesh = new CTriangleMesh(device, commandList);
-	object->SetMesh(pTriangleMesh);
+	object->SetMesh(mesh);
 	_objects.push_back(object);
 }
 

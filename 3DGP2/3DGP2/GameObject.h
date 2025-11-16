@@ -11,6 +11,7 @@ public:
 	void Update();
 	void Render(ComPtr<ID3D12GraphicsCommandList> commandList);
 
+public:
 	void ReleaseUploadBuffer();
 
 public:

@@ -13,50 +13,75 @@ void Shader::Update()
 {
 }
 
-ID3D12RootSignature* Shader::CreateGraphicsRootSignature(ComPtr<ID3D12Device> device)
+void Shader::Render(ComPtr<ID3D12GraphicsCommandList> commandList)
 {
-	ID3D12RootSignature* graphicsRootSignature{};
+	commandList->SetPipelineState(_pipelineState.Get());
+}
 
-	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
+void Shader::CreateGraphicsRootSignature(ComPtr<ID3D12Device> device)
+{
+	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc;
 	rootSignatureDesc.NumParameters = 0;
 	rootSignatureDesc.pParameters = nullptr;
 	rootSignatureDesc.NumStaticSamplers = 0;
 	rootSignatureDesc.pStaticSamplers = nullptr;
+	// IA에서 Vertex Buffer를 사용할 수 있도록 허용
 	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-	// 임의 길이 데이터를 반환하는 데 사용
-	ComPtr<ID3DBlob> signatureBlob{};
-	ComPtr<ID3DBlob> errorBlob{};
+	ComPtr<ID3DBlob> signatureBlob;
+	ComPtr<ID3DBlob> errorBlob;
+	// RootSignature 생성에 필요한 정보를 GPU가 이해할 수 있도록 직렬화
 	D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
-	device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), __uuidof(ID3D12RootSignature), (void**)&graphicsRootSignature);
-
-	return graphicsRootSignature;
+	// RootSignature 생성
+	device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), __uuidof(ID3D12RootSignature), (void**)&_graphicsRootSignature);
 }
 
-void Shader::Render(ComPtr<ID3D12GraphicsCommandList> commandList)
+void Shader::CreateShader(ComPtr<ID3D12Device> device)
 {
-	commandList->SetPipelineState(pipeline_states[0].Get());
+	// RootSinature 생성
+	CreateGraphicsRootSignature(device);
+
+	// Pipeline State
+	ComPtr<ID3DBlob> vertexShaderBlob;
+	ComPtr<ID3DBlob> pixelShaderBlob;
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineStateDesc;
+	::ZeroMemory(&pipelineStateDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+	pipelineStateDesc.pRootSignature = _graphicsRootSignature.Get();
+	// VertexShader 정보 얻어오기
+	pipelineStateDesc.VS = CreateVertexShader(&vertexShaderBlob);
+	// PixelShader 정보 얻어오기
+	pipelineStateDesc.PS = CreatePixelShader(&pixelShaderBlob);
+	pipelineStateDesc.RasterizerState = CreateRasterizerState();
+	pipelineStateDesc.BlendState = CreateBlendState();
+	pipelineStateDesc.DepthStencilState = CreateDepthStencilState();
+	pipelineStateDesc.InputLayout = CreateInputLayout();
+	pipelineStateDesc.SampleMask = UINT_MAX;
+	pipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	pipelineStateDesc.NumRenderTargets = 1;
+	pipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	pipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	pipelineStateDesc.SampleDesc.Count = 1;
+	pipelineStateDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+	// Pipeline State 생성
+	device->CreateGraphicsPipelineState(&pipelineStateDesc, __uuidof(ID3D12PipelineState), (void**)_pipelineState.GetAddressOf());
+
+	if (pipelineStateDesc.InputLayout.pInputElementDescs)
+		delete[] pipelineStateDesc.InputLayout.pInputElementDescs;
 }
 
-D3D12_INPUT_LAYOUT_DESC Shader::CreateInputLayout()
+D3D12_SHADER_BYTECODE Shader::CreateVertexShader(ID3DBlob** shaderBlob)
 {
-	const UINT inputElementDescNum = 2;
-	D3D12_INPUT_ELEMENT_DESC* inputElementDescs = new D3D12_INPUT_ELEMENT_DESC[inputElementDescNum];
+	return CompileShaderFromFile(L"Shader.hlsl", "VSMain", "vs_5_1", shaderBlob);
+}
 
-	//정점은 위치 벡터(POSITION)와 색상(COLOR)을 가진다. 
-	inputElementDescs[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	inputElementDescs[1] = { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-
-	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc;
-	inputLayoutDesc.pInputElementDescs = inputElementDescs;
-	inputLayoutDesc.NumElements = inputElementDescNum;
-
-	return inputLayoutDesc;
+D3D12_SHADER_BYTECODE Shader::CreatePixelShader(ID3DBlob** shaderBlob)
+{
+	return CompileShaderFromFile(L"Shader.hlsl", "PSMain", "ps_5_1", shaderBlob);
 }
 
 D3D12_RASTERIZER_DESC Shader::CreateRasterizerState()
 {
-	D3D12_RASTERIZER_DESC rasterizerDesc{};
+	D3D12_RASTERIZER_DESC rasterizerDesc;
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 	rasterizerDesc.FrontCounterClockwise = FALSE;
@@ -74,7 +99,7 @@ D3D12_RASTERIZER_DESC Shader::CreateRasterizerState()
 
 D3D12_BLEND_DESC Shader::CreateBlendState()
 {
-	D3D12_BLEND_DESC blendDesc{};
+	D3D12_BLEND_DESC blendDesc;
 	blendDesc.AlphaToCoverageEnable = FALSE;
 	blendDesc.IndependentBlendEnable = FALSE;
 	blendDesc.RenderTarget[0].BlendEnable = FALSE;
@@ -93,7 +118,7 @@ D3D12_BLEND_DESC Shader::CreateBlendState()
 
 D3D12_DEPTH_STENCIL_DESC Shader::CreateDepthStencilState()
 {
-	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
+	D3D12_DEPTH_STENCIL_DESC depthStencilDesc;
 	depthStencilDesc.DepthEnable = TRUE;
 	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
@@ -112,14 +137,19 @@ D3D12_DEPTH_STENCIL_DESC Shader::CreateDepthStencilState()
 	return depthStencilDesc;
 }
 
-D3D12_SHADER_BYTECODE Shader::CreateVertexShader(ID3DBlob** shaderBlob)
+D3D12_INPUT_LAYOUT_DESC Shader::CreateInputLayout()
 {
-	return CompileShaderFromFile(L"Shader.hlsl", "VSMain", "vs_5_1", shaderBlob);
-}
+	const UINT inputElementDescNum = 2;
+	D3D12_INPUT_ELEMENT_DESC* inputElementDescs = new D3D12_INPUT_ELEMENT_DESC[inputElementDescNum];
 
-D3D12_SHADER_BYTECODE Shader::CreatePixelShader(ID3DBlob** shaderBlob)
-{
-	return CompileShaderFromFile(L"Shader.hlsl", "PSMain", "ps_5_1", shaderBlob);
+	inputElementDescs[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputElementDescs[1] = { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc;
+	inputLayoutDesc.pInputElementDescs = inputElementDescs;
+	inputLayoutDesc.NumElements = inputElementDescNum;
+
+	return inputLayoutDesc;
 }
 
 D3D12_SHADER_BYTECODE Shader::CompileShaderFromFile(const wchar_t* fileName, LPCSTR shaderName, LPCSTR shaderProfile, ID3DBlob** shaderBlob)
@@ -135,35 +165,6 @@ D3D12_SHADER_BYTECODE Shader::CompileShaderFromFile(const wchar_t* fileName, LPC
 	shaderBytecode.pShaderBytecode = (*shaderBlob)->GetBufferPointer();
 
 	return shaderBytecode;
-}
-
-void Shader::CreateShader(ComPtr<ID3D12Device> device)
-{
-	//그래픽스 파이프라인 상태 객체 배열을 생성한다.
-	pipeline_states.push_back(ComPtr<ID3D12PipelineState>());
-	ComPtr<ID3DBlob> vertexShaderBlob{}, pixelShaderBlob{};
-
-	graphics_root_signature = CreateGraphicsRootSignature(device);
-
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineStateDesc{};
-	pipelineStateDesc.pRootSignature = graphics_root_signature.Get();
-	pipelineStateDesc.VS = CreateVertexShader(&vertexShaderBlob);
-	pipelineStateDesc.PS = CreatePixelShader(&pixelShaderBlob);
-	pipelineStateDesc.RasterizerState = CreateRasterizerState();
-	pipelineStateDesc.BlendState = CreateBlendState();
-	pipelineStateDesc.DepthStencilState = CreateDepthStencilState();
-	pipelineStateDesc.InputLayout = CreateInputLayout();
-	pipelineStateDesc.SampleMask = UINT_MAX;
-	pipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	pipelineStateDesc.NumRenderTargets = 1;
-	pipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
-	pipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	pipelineStateDesc.SampleDesc.Count = 1;
-
-	device->CreateGraphicsPipelineState(&pipelineStateDesc, __uuidof(ID3D12PipelineState), (void**)pipeline_states[0].GetAddressOf());
-
-	if (pipelineStateDesc.InputLayout.pInputElementDescs) 
-		delete[] pipelineStateDesc.InputLayout.pInputElementDescs;
 }
 
 void Shader::ReleaseUploadBuffers()
