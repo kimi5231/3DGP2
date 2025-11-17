@@ -116,16 +116,14 @@ void Shader::CreateShaderResourceView(ComPtr<ID3D12Device> device, ComPtr<ID3D12
 {
 	CreateCbvSrvDescriptorHeaps(device);
 
-	ComPtr<ID3D12Resource> texture;
-	ComPtr<ID3D12Resource> textureUpload;
-	texture = CreateTextureResourceFromDDSFile(device.Get(), commandList.Get(), (wchar_t*)(L"Stone01.dds"), textureUpload.GetAddressOf(), D3D12_RESOURCE_STATE_GENERIC_READ);
+	_texture = CreateTextureResourceFromDDSFile(device.Get(), commandList.Get(), (wchar_t*)(L"Stone01.dds"), _uploadBuffer.GetAddressOf(), D3D12_RESOURCE_STATE_GENERIC_READ);
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.Format = texture->GetDesc().Format;
+	srvDesc.Format = _texture->GetDesc().Format;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = texture->GetDesc().MipLevels;
-	device->CreateShaderResourceView(texture.Get(), &srvDesc, _srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	srvDesc.Texture2D.MipLevels = _texture->GetDesc().MipLevels;
+	device->CreateShaderResourceView(_texture.Get(), &srvDesc, _srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 }
 
 D3D12_SHADER_BYTECODE Shader::CreateVertexShader(ID3DBlob** shaderBlob)
@@ -229,5 +227,5 @@ D3D12_SHADER_BYTECODE Shader::CompileShaderFromFile(const wchar_t* fileName, LPC
 
 void Shader::ReleaseUploadBuffers()
 {
-
+	
 }

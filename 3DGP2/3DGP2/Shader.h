@@ -38,4 +38,7 @@ private:
 	ComPtr<ID3D12PipelineState> _pipelineState{};
 
 	ComPtr<ID3D12DescriptorHeap> _srvDescriptorHeap{};
+
+	ComPtr<ID3D12Resource> _texture;
+	ComPtr<ID3D12Resource> _uploadBuffer;
 };
