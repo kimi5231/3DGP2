@@ -10,7 +10,7 @@ GameObject::~GameObject()
 {
 }
 
-void GameObject::Update()
+void GameObject::Update(ShaderShared shader)
 {
 
 }
@@ -25,9 +25,4 @@ void GameObject::ReleaseUploadBuffer()
 {
 	if (_mesh)
 		_mesh->ReleaseUploadBuffer();
-}
-
-void GameObject::SetMesh(Mesh* mesh)
-{
-	_mesh = mesh;
 }

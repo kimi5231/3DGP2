@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "GameFramework.h"
-#include "Scene.h"
+#include "TitleScene.h"
 
 GameFramework::GameFramework(HWND hwnd)
 {
@@ -17,7 +17,7 @@ GameFramework::GameFramework(HWND hwnd)
 
 	_commandList->Reset(_commandAllocator.Get(), NULL);
 
-	_scene = new Scene(_device, _commandList);
+	_scene = new TitleScene(_device, _commandList);
 
 	_commandList->Close();
 	ID3D12CommandList* commandLists[] = { _commandList.Get() };
@@ -278,7 +278,7 @@ void GameFramework::CreateRtvDsvDescriptorHeaps()
 	descriptorHeapDesc.NodeMask = 0;
 	// RTV DescriptorHeap 생성
 	_device->CreateDescriptorHeap(&descriptorHeapDesc, __uuidof(ID3D12DescriptorHeap), (void**)&_rtvDescriptorHeap);
-	// RTV offset값 설정
+	// RTV 건너뛸 값 설정
 	_rtvDescriptorIncrementSize = _device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 	// DSV
@@ -300,7 +300,7 @@ void GameFramework::CreateRenderTargetViews()
 		_swapChain->GetBuffer(i, __uuidof(ID3D12Resource), (void**)&_swapChainBackBuffers[i]);
 		// RTV를 생성하고 SwapChain BackBuffer를 참조하는 배열에 연결 및 DescriptorHeap에 등록
 		_device->CreateRenderTargetView(_swapChainBackBuffers[i].Get(), NULL, rtvDescriptorCPUHandle);
-		// RTV offset만큼 이동
+		// RTV 크기만큼 이동
 		rtvDescriptorCPUHandle.ptr += _rtvDescriptorIncrementSize;
 	}
 }

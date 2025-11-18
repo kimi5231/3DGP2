@@ -13,11 +13,14 @@ void Shader::Update()
 {
 }
 
-void Shader::Render(ComPtr<ID3D12GraphicsCommandList> commandList)
+void Shader::Render(UINT objectID, ComPtr<ID3D12GraphicsCommandList> commandList)
 {
+	D3D12_GPU_DESCRIPTOR_HANDLE srvDescriptorGPUHandle = _srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+	for(int i = 0; i< objectID; i++)
+		srvDescriptorGPUHandle.ptr += _srvDescriptorIncrementSize;
 	commandList->SetGraphicsRootSignature(_graphicsRootSignature.Get());
 	commandList->SetDescriptorHeaps(1, _srvDescriptorHeap.GetAddressOf());
-	commandList->SetGraphicsRootDescriptorTable(0, _srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+	commandList->SetGraphicsRootDescriptorTable(0, srvDescriptorGPUHandle);
 	commandList->SetPipelineState(_pipelineState.Get());
 }
 
@@ -105,25 +108,37 @@ void Shader::CreateShader(ComPtr<ID3D12Device> device)
 void Shader::CreateCbvSrvDescriptorHeaps(ComPtr<ID3D12Device> device)
 {
 	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc;
-	descriptorHeapDesc.NumDescriptors = 1;
+	descriptorHeapDesc.NumDescriptors = 3;
 	descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	descriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	descriptorHeapDesc.NodeMask = 0;
 	device->CreateDescriptorHeap(&descriptorHeapDesc, __uuidof(ID3D12DescriptorHeap), (void**)&_srvDescriptorHeap);
+
+	_srvDescriptorIncrementSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
 void Shader::CreateShaderResourceView(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList)
 {
 	CreateCbvSrvDescriptorHeaps(device);
 
-	_texture = CreateTextureResourceFromDDSFile(device.Get(), commandList.Get(), (wchar_t*)(L"Stone01.dds"), _uploadBuffer.GetAddressOf(), D3D12_RESOURCE_STATE_GENERIC_READ);
+	// 텍스쳐 로드
+	_uploadBuffers.resize(3);
+	_textures.push_back(CreateTextureResourceFromDDSFile(device.Get(), commandList.Get(), (wchar_t*)(L"Resource\\Title.dds"), _uploadBuffers[0].GetAddressOf(), D3D12_RESOURCE_STATE_GENERIC_READ));
+	_textures.push_back(CreateTextureResourceFromDDSFile(device.Get(), commandList.Get(), (wchar_t*)(L"Resource\\GameStartButton.dds"), _uploadBuffers[1].GetAddressOf(), D3D12_RESOURCE_STATE_GENERIC_READ));
+	_textures.push_back(CreateTextureResourceFromDDSFile(device.Get(), commandList.Get(), (wchar_t*)(L"Resource\\GameEndButton.dds"), _uploadBuffers[2].GetAddressOf(), D3D12_RESOURCE_STATE_GENERIC_READ));
 
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.Format = _texture->GetDesc().Format;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = _texture->GetDesc().MipLevels;
-	device->CreateShaderResourceView(_texture.Get(), &srvDesc, _srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	// SRV 생성
+	D3D12_CPU_DESCRIPTOR_HANDLE srvDescriptorCPUHandle = _srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	for (ComPtr<ID3D12Resource> texture : _textures)
+	{
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srvDesc.Format = texture->GetDesc().Format;
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MipLevels = texture->GetDesc().MipLevels;
+		device->CreateShaderResourceView(texture.Get(), &srvDesc, srvDescriptorCPUHandle);
+		srvDescriptorCPUHandle.ptr += _srvDescriptorIncrementSize;
+	}
 }
 
 D3D12_SHADER_BYTECODE Shader::CreateVertexShader(ID3DBlob** shaderBlob)

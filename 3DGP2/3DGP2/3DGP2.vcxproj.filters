@@ -21,6 +21,9 @@
     <Filter Include="소스 파일\Shader">
       <UniqueIdentifier>{55c9eeec-058e-40b4-9fed-06af1b9f427d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Game\Scene">
+      <UniqueIdentifier>{8755ede0-2ab3-4129-8bec-77146cac3a14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resource.h">
@@ -33,9 +36,6 @@
       <Filter>소스 파일\Default</Filter>
     </ClInclude>
     <ClInclude Include="GameFramework.h">
-      <Filter>소스 파일\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene.h">
       <Filter>소스 파일\Game</Filter>
     </ClInclude>
     <ClInclude Include="GameObject.h">
@@ -52,6 +52,12 @@
     </ClInclude>
     <ClInclude Include="DDSTextureLoader12.h">
       <Filter>소스 파일\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="TitleScene.h">
+      <Filter>소스 파일\Game\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>소스 파일\Game\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -77,9 +83,6 @@
     <ClCompile Include="GameFramework.cpp">
       <Filter>소스 파일\Game</Filter>
     </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>소스 파일\Game</Filter>
-    </ClCompile>
     <ClCompile Include="GameObject.cpp">
       <Filter>소스 파일\Game</Filter>
     </ClCompile>
@@ -91,6 +94,12 @@
     </ClCompile>
     <ClCompile Include="DDSTextureLoader12.cpp">
       <Filter>소스 파일\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="TitleScene.cpp">
+      <Filter>소스 파일\Game\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>소스 파일\Game\Scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

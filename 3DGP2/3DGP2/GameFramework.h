@@ -57,7 +57,7 @@ private:
 	// GPU가 사용할 RTV를 담아둘 DescriptorHeap 
 	// RTV: GPU가 SwapChain BackBuffer에 접근하기 위해 필요한 View
 	ComPtr<ID3D12DescriptorHeap> _rtvDescriptorHeap{};
-	// RTV offset값
+	// RTV 건너 뛸 값
 	UINT _rtvDescriptorIncrementSize{};
 
 	// GPU가 사용할 DSV를 담아둘 DescriptorHeap

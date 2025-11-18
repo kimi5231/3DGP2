@@ -6,7 +6,7 @@ class Scene
 {
 public:
 	Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
-	~Scene();
+	virtual ~Scene();
 
 public:
 	void Update();
@@ -15,7 +15,7 @@ public:
 public:
 	void ReleaseUploadBuffers();
 
-private:
-	std::vector<ShaderShared> _shaders;
+protected:
+	ShaderShared _shader;
 	std::vector<GameObjectShared> _objects;
 };

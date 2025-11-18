@@ -10,6 +10,7 @@ public:
 	{
 		pos = other.pos;
 		color = other.color;
+		uv = other.uv;
 		return *this;
 	}
 };

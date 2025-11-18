@@ -7,7 +7,7 @@ public:
 
 public:
 	void Update();
-	void Render(ComPtr<ID3D12GraphicsCommandList> commandList);
+	void Render(UINT objectID, ComPtr<ID3D12GraphicsCommandList> commandList);
 
 public:
 	void CreateGraphicsRootSignature(ComPtr<ID3D12Device>);
@@ -38,7 +38,9 @@ private:
 	ComPtr<ID3D12PipelineState> _pipelineState{};
 
 	ComPtr<ID3D12DescriptorHeap> _srvDescriptorHeap{};
+	// SRV °Ç³Ê¶Û °ª
+	UINT _srvDescriptorIncrementSize{};
 
-	ComPtr<ID3D12Resource> _texture;
-	ComPtr<ID3D12Resource> _uploadBuffer;
+	std::vector<ComPtr<ID3D12Resource>> _textures;
+	std::vector<ComPtr<ID3D12Resource>> _uploadBuffers;
 };
