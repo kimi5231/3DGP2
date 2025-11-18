@@ -15,6 +15,8 @@ public:
 public:
 	void ReleaseUploadBuffers();
 
+	virtual void ProcessInput(HWND hwnd) {};
+
 protected:
 	ShaderShared _shader;
 	std::vector<GameObjectShared> _objects;

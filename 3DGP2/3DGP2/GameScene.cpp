@@ -33,3 +33,8 @@ GameScene::GameScene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandLi
 GameScene::~GameScene()
 {
 }
+
+void GameScene::ProcessInput(HWND hwnd)
+{
+
+}

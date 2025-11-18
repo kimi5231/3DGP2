@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "Resource.h"
+#include "Global.h"
 #include "GameFramework.h"
 
 #define MAX_LOADSTRING 100
@@ -12,8 +13,6 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
-
-GameFramework* g_gameFramework;
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,

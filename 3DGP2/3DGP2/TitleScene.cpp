@@ -3,6 +3,7 @@
 #include "Mesh.h"
 #include "GameObject.h"
 #include "Shader.h"
+#include "Global.h"
 
 TitleScene::TitleScene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList)
 {
@@ -86,4 +87,28 @@ TitleScene::TitleScene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommand
 
 TitleScene::~TitleScene()
 {
+}
+
+void TitleScene::ProcessInput(HWND hwnd)
+{
+	if (GetAsyncKeyState(VK_LBUTTON) & 0x0001)
+	{
+		POINT mousePos;
+		GetCursorPos(&mousePos);
+		ScreenToClient(hwnd, &mousePos);
+
+		float mPosX = (2.0f * mousePos.x / ScreenWidth) - 1.0f;
+		float mPosY = 1.0f - (2.0f * mousePos.y / ScreenHeight);
+
+		if (mPosX <= -0.4 && mPosX >= -0.9)
+		{
+			// Game Start Button
+			if (mPosY <= 0.9 && mPosY >= 0.7)
+				g_gameFramework->ChangeScene();
+
+			// Game End Button
+			if (mPosY <= 0.6 && mPosY >= 0.4)
+				PostQuitMessage(0);
+		}
+	}
 }

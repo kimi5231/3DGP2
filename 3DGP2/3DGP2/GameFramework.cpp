@@ -388,26 +388,8 @@ void GameFramework::MoveToNextFrame()
 
 void GameFramework::ProcessInput()
 {
-	if (GetAsyncKeyState(VK_LBUTTON) & 0x0001)
-	{
-		POINT mousePos;
-		GetCursorPos(&mousePos);
-		ScreenToClient(_hwnd, &mousePos);
-
-		float mPosX = (2.0f * mousePos.x / ScreenWidth) - 1.0f;
-		float mPosY = 1.0f - (2.0f * mousePos.y / ScreenHeight);
-	
-		if (mPosX <= -0.4 && mPosX >= -0.9)
-		{
-			// Game Start Button
-			if (mPosY <= 0.9 && mPosY >= 0.7)
-				ChangeScene();
-			
-			// Game End Button
-			if (mPosY <= 0.6 && mPosY >= 0.4)
-				PostQuitMessage(0);
-		}
-	}
+	if (_scene)
+		_scene->ProcessInput(_hwnd);
 }
 
 void GameFramework::ChangeScene()

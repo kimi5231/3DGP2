@@ -6,4 +6,7 @@ class GameScene : public Scene
 public:
 	GameScene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
 	virtual ~GameScene();
+
+public:
+	virtual void ProcessInput(HWND hwnd);
 };
