@@ -2,9 +2,8 @@
 #include "Scene.h"
 #include "GameObject.h"
 #include "Shader.h"
-#include "Mesh.h"
 
-Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList)
+Scene::Scene()
 {
 	
 }
@@ -22,7 +21,8 @@ void Scene::Render(ComPtr<ID3D12GraphicsCommandList> commandList)
 {
 	for (GameObjectShared object : _objects)
 	{
-		_shader->Render(object->GetID(), commandList);
+		if(_shader)
+			_shader->Render(object->GetID(), commandList);
 		object->Render(commandList);
 	}
 }

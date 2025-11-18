@@ -5,7 +5,7 @@ class Shader;
 class Scene
 {
 public:
-	Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
+	Scene();
 	virtual ~Scene();
 
 public:

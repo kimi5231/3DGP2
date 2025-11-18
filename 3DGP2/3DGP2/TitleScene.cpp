@@ -5,7 +5,6 @@
 #include "Shader.h"
 
 TitleScene::TitleScene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList)
-	: Scene(device, commandList)
 {
 	_shader = std::make_shared<Shader>();
 	_shader->CreateShader(device);
@@ -21,13 +20,13 @@ TitleScene::TitleScene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommand
 		Vertex vertices[] =
 		{
 			// 첫번째 삼각형
-			Vertex(XMFLOAT3(-0.9f, 0.9f, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 0.0f)),
-			Vertex(XMFLOAT3(-0.4f, 0.9f, 0.0f), XMFLOAT4(0.0f,1.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f)),
+			Vertex(XMFLOAT3(-0.9f, 0.9f, 0.0f), XMFLOAT4(Colors::Red), XMFLOAT2(0.0f, 0.0f)),
+			Vertex(XMFLOAT3(-0.4f, 0.9f, 0.0f), XMFLOAT4(Colors::Green), XMFLOAT2(1.0f, 0.0f)),
 			Vertex(XMFLOAT3(-0.9f, 0.7f, 0.0f), XMFLOAT4(Colors::Blue), XMFLOAT2(0.0f, 1.0f)),
 			// 두번째 삼각형
-			Vertex(XMFLOAT3(-0.4f, 0.9f, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f)),
-			Vertex(XMFLOAT3(-0.4f, 0.7f, 0.0f), XMFLOAT4(Colors::Blue), XMFLOAT2(1.0f, 1.0f)),
-			Vertex(XMFLOAT3(-0.9f, 0.7f, 0.0f), XMFLOAT4(0.0f,1.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 1.0f))
+			Vertex(XMFLOAT3(-0.4f, 0.9f, 0.0f), XMFLOAT4(Colors::Red), XMFLOAT2(1.0f, 0.0f)),
+			Vertex(XMFLOAT3(-0.4f, 0.7f, 0.0f), XMFLOAT4(Colors::Green), XMFLOAT2(1.0f, 1.0f)),
+			Vertex(XMFLOAT3(-0.9f, 0.7f, 0.0f), XMFLOAT4(Colors::Blue), XMFLOAT2(0.0f, 1.0f))
 		};
 		mesh->SetVertexCount(6);
 		mesh->SetTriangle(device, commandList, vertices);
@@ -44,13 +43,13 @@ TitleScene::TitleScene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommand
 		Vertex vertices[] =
 		{
 			// 첫번째 삼각형
-			Vertex(XMFLOAT3(-0.9f, 0.6f, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 0.0f)),
-			Vertex(XMFLOAT3(-0.4f, 0.6f, 0.0f), XMFLOAT4(0.0f,1.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f)),
+			Vertex(XMFLOAT3(-0.9f, 0.6f, 0.0f), XMFLOAT4(Colors::Red), XMFLOAT2(0.0f, 0.0f)),
+			Vertex(XMFLOAT3(-0.4f, 0.6f, 0.0f), XMFLOAT4(Colors::Green), XMFLOAT2(1.0f, 0.0f)),
 			Vertex(XMFLOAT3(-0.9f, 0.4f, 0.0f), XMFLOAT4(Colors::Blue), XMFLOAT2(0.0f, 1.0f)),
 			// 두번째 삼각형
-			Vertex(XMFLOAT3(-0.4f, 0.6f, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f)),
-			Vertex(XMFLOAT3(-0.4f, 0.4f, 0.0f), XMFLOAT4(Colors::Blue), XMFLOAT2(1.0f, 1.0f)),
-			Vertex(XMFLOAT3(-0.9f, 0.4f, 0.0f), XMFLOAT4(0.0f,1.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 1.0f))
+			Vertex(XMFLOAT3(-0.4f, 0.6f, 0.0f), XMFLOAT4(Colors::Red), XMFLOAT2(1.0f, 0.0f)),
+			Vertex(XMFLOAT3(-0.4f, 0.4f, 0.0f), XMFLOAT4(Colors::Green), XMFLOAT2(1.0f, 1.0f)),
+			Vertex(XMFLOAT3(-0.9f, 0.4f, 0.0f), XMFLOAT4(Colors::Blue), XMFLOAT2(0.0f, 1.0f))
 		};
 		mesh->SetVertexCount(6);
 		mesh->SetTriangle(device, commandList, vertices);
@@ -67,13 +66,13 @@ TitleScene::TitleScene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommand
 		Vertex vertices[] =
 		{
 			// 첫번째 삼각형
-			Vertex(XMFLOAT3(-1.0f, 1.0f, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 0.0f)),
-			Vertex(XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT4(0.0f,1.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f)),
+			Vertex(XMFLOAT3(-1.0f, 1.0f, 0.0f), XMFLOAT4(Colors::Red), XMFLOAT2(0.0f, 0.0f)),
+			Vertex(XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT4(Colors::Green), XMFLOAT2(1.0f, 0.0f)),
 			Vertex(XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT4(Colors::Blue), XMFLOAT2(0.0f, 1.0f)),
 			// 두번째 삼각형
-			Vertex(XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f)),
-			Vertex(XMFLOAT3(1.0f, -1.0f, 0.0f), XMFLOAT4(Colors::Blue), XMFLOAT2(1.0f, 1.0f)),
-			Vertex(XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT4(0.0f,1.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 1.0f))
+			Vertex(XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT4(Colors::Red), XMFLOAT2(1.0f, 0.0f)),
+			Vertex(XMFLOAT3(1.0f, -1.0f, 0.0f), XMFLOAT4(Colors::Green), XMFLOAT2(1.0f, 1.0f)),
+			Vertex(XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT4(Colors::Blue), XMFLOAT2(0.0f, 1.0f))
 		};
 		mesh->SetVertexCount(6);
 		mesh->SetTriangle(device, commandList, vertices);

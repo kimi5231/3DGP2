@@ -84,11 +84,11 @@ void GameFramework::Update()
 	_commandList->Close();
 	ID3D12CommandList* commandLists[]{ _commandList.Get() };
 	_commandQueue->ExecuteCommandLists(1, commandLists);
+	WaitForGpuComplete();
 
 	_swapChain->Present(0, 0);
-	_swapChainBufferIndex = _swapChain->GetCurrentBackBufferIndex();
-
-	WaitForGpuComplete();
+	
+	MoveToNextFrame();
 }
 
 void GameFramework::Render()
@@ -401,12 +401,8 @@ void GameFramework::ProcessInput()
 		{
 			// Game Start Button
 			if (mPosY <= 0.9 && mPosY >= 0.7)
-			{
 				ChangeScene();
-				WaitForGpuComplete();
-			}
-				
-
+			
 			// Game End Button
 			if (mPosY <= 0.6 && mPosY >= 0.4)
 				PostQuitMessage(0);
