@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "GameFramework.h"
 #include "TitleScene.h"
+#include "GameScene.h"
 
 GameFramework::GameFramework(HWND hwnd)
 {
@@ -70,6 +71,8 @@ void GameFramework::Update()
 	// 원하는 값으로 깊이 스텐실 지우기
 	_commandList->ClearDepthStencilView(dsvCPUDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0F, 0, 0, NULL);
 
+	ProcessInput();
+
 	if (_scene) 
 		_scene->Render(_commandList.Get());
 
@@ -79,18 +82,13 @@ void GameFramework::Update()
 	_commandList->ResourceBarrier(1, &resourceBarrier);
 
 	_commandList->Close();
-
 	ID3D12CommandList* commandLists[]{ _commandList.Get() };
 	_commandQueue->ExecuteCommandLists(1, commandLists);
 
-	
-
-	// 스왑체인 프리젠트. 현재 렌더 타겟의 내용이 전면 버퍼로 옮겨지고 렌더 타겟 인덱스가 바뀜
 	_swapChain->Present(0, 0);
+	_swapChainBufferIndex = _swapChain->GetCurrentBackBufferIndex();
 
 	WaitForGpuComplete();
-
-	//MoveToNextFrame();
 }
 
 void GameFramework::Render()
@@ -386,4 +384,38 @@ void GameFramework::MoveToNextFrame()
 		_fence->SetEventOnCompletion(fenceValue, _fenceEvent);
 		WaitForSingleObject(_fenceEvent, INFINITE);
 	}
+}
+
+void GameFramework::ProcessInput()
+{
+	if (GetAsyncKeyState(VK_LBUTTON) & 0x0001)
+	{
+		POINT mousePos;
+		GetCursorPos(&mousePos);
+		ScreenToClient(_hwnd, &mousePos);
+
+		float mPosX = (2.0f * mousePos.x / ScreenWidth) - 1.0f;
+		float mPosY = 1.0f - (2.0f * mousePos.y / ScreenHeight);
+	
+		if (mPosX <= -0.4 && mPosX >= -0.9)
+		{
+			// Game Start Button
+			if (mPosY <= 0.9 && mPosY >= 0.7)
+			{
+				ChangeScene();
+				WaitForGpuComplete();
+			}
+				
+
+			// Game End Button
+			if (mPosY <= 0.6 && mPosY >= 0.4)
+				PostQuitMessage(0);
+		}
+	}
+}
+
+void GameFramework::ChangeScene()
+{
+	delete _scene;
+	_scene = new GameScene(_device, _commandList);
 }

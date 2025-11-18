@@ -6,9 +6,7 @@
 
 Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList)
 {
-	_shader = std::make_shared<Shader>();
-	_shader->CreateShader(device);
-	_shader->CreateShaderResourceView(device, commandList);
+	
 }
 
 Scene::~Scene()

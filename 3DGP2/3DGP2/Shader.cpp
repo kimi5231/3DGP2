@@ -117,19 +117,13 @@ void Shader::CreateCbvSrvDescriptorHeaps(ComPtr<ID3D12Device> device)
 	_srvDescriptorIncrementSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
-void Shader::CreateShaderResourceView(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList)
+void Shader::CreateShaderResourceView(std::vector<ComPtr<ID3D12Resource>> textures, ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList)
 {
 	CreateCbvSrvDescriptorHeaps(device);
 
-	// 텍스쳐 로드
-	_uploadBuffers.resize(3);
-	_textures.push_back(CreateTextureResourceFromDDSFile(device.Get(), commandList.Get(), (wchar_t*)(L"Resource\\Title.dds"), _uploadBuffers[0].GetAddressOf(), D3D12_RESOURCE_STATE_GENERIC_READ));
-	_textures.push_back(CreateTextureResourceFromDDSFile(device.Get(), commandList.Get(), (wchar_t*)(L"Resource\\GameStartButton.dds"), _uploadBuffers[1].GetAddressOf(), D3D12_RESOURCE_STATE_GENERIC_READ));
-	_textures.push_back(CreateTextureResourceFromDDSFile(device.Get(), commandList.Get(), (wchar_t*)(L"Resource\\GameEndButton.dds"), _uploadBuffers[2].GetAddressOf(), D3D12_RESOURCE_STATE_GENERIC_READ));
-
 	// SRV 생성
 	D3D12_CPU_DESCRIPTOR_HANDLE srvDescriptorCPUHandle = _srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	for (ComPtr<ID3D12Resource> texture : _textures)
+	for (ComPtr<ID3D12Resource> texture : textures)
 	{
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;

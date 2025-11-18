@@ -17,13 +17,17 @@ private:
 	void CreateCommandQueueAndList();
 	void CreateSwapChain();
 
-	// 
 	void CreateRtvDsvDescriptorHeaps();
 	void CreateRenderTargetViews();
 	void CreateDepthStencilView();
 
 	void WaitForGpuComplete();
 	void MoveToNextFrame();
+
+public:
+	void ProcessInput();
+
+	void ChangeScene();
 
 private:
 	Scene* _scene;

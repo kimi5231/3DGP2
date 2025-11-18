@@ -2,10 +2,19 @@
 #include "TitleScene.h"
 #include "Mesh.h"
 #include "GameObject.h"
+#include "Shader.h"
 
 TitleScene::TitleScene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList)
 	: Scene(device, commandList)
 {
+	_shader = std::make_shared<Shader>();
+	_shader->CreateShader(device);
+	_uploadBuffers.resize(3);
+	_textures.push_back(CreateTextureResourceFromDDSFile(device.Get(), commandList.Get(), (wchar_t*)(L"Resource\\Title.dds"), _uploadBuffers[0].GetAddressOf(), D3D12_RESOURCE_STATE_GENERIC_READ));
+	_textures.push_back(CreateTextureResourceFromDDSFile(device.Get(), commandList.Get(), (wchar_t*)(L"Resource\\GameStartButton.dds"), _uploadBuffers[1].GetAddressOf(), D3D12_RESOURCE_STATE_GENERIC_READ));
+	_textures.push_back(CreateTextureResourceFromDDSFile(device.Get(), commandList.Get(), (wchar_t*)(L"Resource\\GameEndButton.dds"), _uploadBuffers[2].GetAddressOf(), D3D12_RESOURCE_STATE_GENERIC_READ));
+	_shader->CreateShaderResourceView(_textures, device, commandList);
+
 	// Game Start Button
 	{
 		Mesh* mesh = new Mesh();

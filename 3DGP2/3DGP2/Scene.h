@@ -18,4 +18,6 @@ public:
 protected:
 	ShaderShared _shader;
 	std::vector<GameObjectShared> _objects;
+	std::vector<ComPtr<ID3D12Resource>> _textures;
+	std::vector<ComPtr<ID3D12Resource>> _uploadBuffers;
 };

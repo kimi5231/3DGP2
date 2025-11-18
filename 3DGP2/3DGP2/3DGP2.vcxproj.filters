@@ -59,6 +59,9 @@
     <ClInclude Include="Scene.h">
       <Filter>소스 파일\Game\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="GameScene.h">
+      <Filter>소스 파일\Game\Scene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="3DGP2.rc">
@@ -99,6 +102,9 @@
       <Filter>소스 파일\Game\Scene</Filter>
     </ClCompile>
     <ClCompile Include="Scene.cpp">
+      <Filter>소스 파일\Game\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameScene.cpp">
       <Filter>소스 파일\Game\Scene</Filter>
     </ClCompile>
   </ItemGroup>

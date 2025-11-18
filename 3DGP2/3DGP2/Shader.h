@@ -15,7 +15,7 @@ public:
 	virtual void CreateShader(ComPtr<ID3D12Device> device);
 
 	void CreateCbvSrvDescriptorHeaps(ComPtr<ID3D12Device> device);
-	void CreateShaderResourceView(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
+	void CreateShaderResourceView(std::vector<ComPtr<ID3D12Resource>> textures, ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
 	
 	// piplineState 설정을 위한 함수
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader(ID3DBlob** shaderBlob);
@@ -40,7 +40,4 @@ private:
 	ComPtr<ID3D12DescriptorHeap> _srvDescriptorHeap{};
 	// SRV 건너뛸 값
 	UINT _srvDescriptorIncrementSize{};
-
-	std::vector<ComPtr<ID3D12Resource>> _textures;
-	std::vector<ComPtr<ID3D12Resource>> _uploadBuffers;
 };
