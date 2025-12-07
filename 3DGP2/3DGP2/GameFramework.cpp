@@ -99,7 +99,7 @@ void GameFramework::Render()
 void GameFramework::CreateDevice()
 {
 	// Factory의 어떤 기능을 켤지를 지정하는 용도
-	UINT factoryFlag;
+	UINT factoryFlag{};
 
 	// Debug 빌드일 때, GPU 관련 오류를 콘솔에 출력
 #if defined(_DEBUG)
