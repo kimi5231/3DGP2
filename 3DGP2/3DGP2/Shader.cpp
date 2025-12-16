@@ -80,6 +80,8 @@ void Shader::CreateShader(ComPtr<ID3D12Device> device)
 	// Pipeline State
 	ComPtr<ID3DBlob> vertexShaderBlob;
 	ComPtr<ID3DBlob> pixelShaderBlob;
+	ComPtr<ID3DBlob> hullShaderBlob;
+	ComPtr<ID3DBlob> domainShaderBlob;
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineStateDesc;
 	::ZeroMemory(&pipelineStateDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 	pipelineStateDesc.pRootSignature = _graphicsRootSignature.Get();
@@ -87,12 +89,16 @@ void Shader::CreateShader(ComPtr<ID3D12Device> device)
 	pipelineStateDesc.VS = CreateVertexShader(&vertexShaderBlob);
 	// PixelShader 정보 얻어오기
 	pipelineStateDesc.PS = CreatePixelShader(&pixelShaderBlob);
+	// HullShader 정보 얻어오기
+	pipelineStateDesc.HS = CreateHullShader(&hullShaderBlob);
+	// DomainShader 정보 얻어오기
+	pipelineStateDesc.DS = CreateDomainShader(&domainShaderBlob);
 	pipelineStateDesc.RasterizerState = CreateRasterizerState();
 	pipelineStateDesc.BlendState = CreateBlendState();
 	pipelineStateDesc.DepthStencilState = CreateDepthStencilState();
 	pipelineStateDesc.InputLayout = CreateInputLayout();
 	pipelineStateDesc.SampleMask = UINT_MAX;
-	pipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	pipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
 	pipelineStateDesc.NumRenderTargets = 1;
 	pipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 	pipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -145,10 +151,21 @@ D3D12_SHADER_BYTECODE Shader::CreatePixelShader(ID3DBlob** shaderBlob)
 	return CompileShaderFromFile(L"Shader.hlsl", "PSMain", "ps_5_1", shaderBlob);
 }
 
+D3D12_SHADER_BYTECODE Shader::CreateHullShader(ID3DBlob** shaderBlob)
+{
+	return CompileShaderFromFile(L"Shader.hlsl", "HSMain", "hs_5_1", shaderBlob);
+}
+
+D3D12_SHADER_BYTECODE Shader::CreateDomainShader(ID3DBlob** shaderBlob)
+{
+	return CompileShaderFromFile(L"Shader.hlsl", "DSMain", "ds_5_1", shaderBlob);
+}
+
 D3D12_RASTERIZER_DESC Shader::CreateRasterizerState()
 {
 	D3D12_RASTERIZER_DESC rasterizerDesc;
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	// rasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
 	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 	rasterizerDesc.FrontCounterClockwise = FALSE;
 	rasterizerDesc.DepthBias = 0;

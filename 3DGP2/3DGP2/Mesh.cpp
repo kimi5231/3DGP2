@@ -22,7 +22,7 @@ void Mesh::Render(ComPtr<ID3D12GraphicsCommandList> commandList)
 void Mesh::SetTriangle(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, Vertex* vertices)
 {
 	_stride = sizeof(Vertex);
-	_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	_primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST;
 
 	// 정점 버퍼 생성
 	_vertexBuffer = CreateBufferResource(device, commandList, vertices, _stride * _vertexCount, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, _uploadBuffer.GetAddressOf());

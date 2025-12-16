@@ -20,6 +20,8 @@ public:
 	// piplineState 설정을 위한 함수
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader(ID3DBlob** shaderBlob);
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader(ID3DBlob** shaderBlob);
+	virtual D3D12_SHADER_BYTECODE CreateHullShader(ID3DBlob** shaderBlob);
+	virtual D3D12_SHADER_BYTECODE CreateDomainShader(ID3DBlob** shaderBlob);
 	virtual D3D12_RASTERIZER_DESC CreateRasterizerState();
 	virtual D3D12_BLEND_DESC CreateBlendState();
 	virtual D3D12_DEPTH_STENCIL_DESC CreateDepthStencilState();
