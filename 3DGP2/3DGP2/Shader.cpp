@@ -80,6 +80,39 @@ void Shader::CreateShader(ComPtr<ID3D12Device> device)
 	// Pipeline State
 	ComPtr<ID3DBlob> vertexShaderBlob;
 	ComPtr<ID3DBlob> pixelShaderBlob;
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineStateDesc;
+	::ZeroMemory(&pipelineStateDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+	pipelineStateDesc.pRootSignature = _graphicsRootSignature.Get();
+	// VertexShader 정보 얻어오기
+	pipelineStateDesc.VS = CreateVertexShader(&vertexShaderBlob);
+	// PixelShader 정보 얻어오기
+	pipelineStateDesc.PS = CreatePixelShader(&pixelShaderBlob);
+	pipelineStateDesc.RasterizerState = CreateRasterizerState();
+	pipelineStateDesc.BlendState = CreateBlendState();
+	pipelineStateDesc.DepthStencilState = CreateDepthStencilState();
+	pipelineStateDesc.InputLayout = CreateInputLayout();
+	pipelineStateDesc.SampleMask = UINT_MAX;
+	pipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	pipelineStateDesc.NumRenderTargets = 1;
+	pipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	pipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	pipelineStateDesc.SampleDesc.Count = 1;
+	pipelineStateDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+	// Pipeline State 생성
+	device->CreateGraphicsPipelineState(&pipelineStateDesc, __uuidof(ID3D12PipelineState), (void**)_pipelineState.GetAddressOf());
+
+	if (pipelineStateDesc.InputLayout.pInputElementDescs)
+		delete[] pipelineStateDesc.InputLayout.pInputElementDescs;
+}
+
+void Shader::CreateShaderTessellation(ComPtr<ID3D12Device> device)
+{
+	// RootSinature 생성
+	CreateGraphicsRootSignature(device);
+
+	// Pipeline State
+	ComPtr<ID3DBlob> vertexShaderBlob;
+	ComPtr<ID3DBlob> pixelShaderBlob;
 	ComPtr<ID3DBlob> hullShaderBlob;
 	ComPtr<ID3DBlob> domainShaderBlob;
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineStateDesc;
@@ -93,7 +126,7 @@ void Shader::CreateShader(ComPtr<ID3D12Device> device)
 	pipelineStateDesc.HS = CreateHullShader(&hullShaderBlob);
 	// DomainShader 정보 얻어오기
 	pipelineStateDesc.DS = CreateDomainShader(&domainShaderBlob);
-	pipelineStateDesc.RasterizerState = CreateRasterizerState();
+	pipelineStateDesc.RasterizerState = CreateRasterizerStateWireframe();
 	pipelineStateDesc.BlendState = CreateBlendState();
 	pipelineStateDesc.DepthStencilState = CreateDepthStencilState();
 	pipelineStateDesc.InputLayout = CreateInputLayout();
@@ -165,7 +198,24 @@ D3D12_RASTERIZER_DESC Shader::CreateRasterizerState()
 {
 	D3D12_RASTERIZER_DESC rasterizerDesc;
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-	// rasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
+	rasterizerDesc.FrontCounterClockwise = FALSE;
+	rasterizerDesc.DepthBias = 0;
+	rasterizerDesc.DepthBiasClamp = 0.0f;
+	rasterizerDesc.SlopeScaledDepthBias = 0.0f;
+	rasterizerDesc.DepthClipEnable = TRUE;
+	rasterizerDesc.MultisampleEnable = FALSE;
+	rasterizerDesc.AntialiasedLineEnable = FALSE;
+	rasterizerDesc.ForcedSampleCount = 0;
+	rasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+	return rasterizerDesc;
+}
+
+D3D12_RASTERIZER_DESC Shader::CreateRasterizerStateWireframe()
+{
+	D3D12_RASTERIZER_DESC rasterizerDesc;
+	rasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
 	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 	rasterizerDesc.FrontCounterClockwise = FALSE;
 	rasterizerDesc.DepthBias = 0;

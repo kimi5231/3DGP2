@@ -13,6 +13,7 @@ public:
 	void CreateGraphicsRootSignature(ComPtr<ID3D12Device>);
 
 	virtual void CreateShader(ComPtr<ID3D12Device> device);
+	virtual void CreateShaderTessellation(ComPtr<ID3D12Device> device);
 
 	void CreateCbvSrvDescriptorHeaps(ComPtr<ID3D12Device> device);
 	void CreateShaderResourceView(std::vector<ComPtr<ID3D12Resource>> textures, ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
@@ -23,6 +24,7 @@ public:
 	virtual D3D12_SHADER_BYTECODE CreateHullShader(ID3DBlob** shaderBlob);
 	virtual D3D12_SHADER_BYTECODE CreateDomainShader(ID3DBlob** shaderBlob);
 	virtual D3D12_RASTERIZER_DESC CreateRasterizerState();
+	virtual D3D12_RASTERIZER_DESC CreateRasterizerStateWireframe();
 	virtual D3D12_BLEND_DESC CreateBlendState();
 	virtual D3D12_DEPTH_STENCIL_DESC CreateDepthStencilState();
 	virtual D3D12_INPUT_LAYOUT_DESC CreateInputLayout();

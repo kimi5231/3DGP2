@@ -15,7 +15,7 @@ public:
 public:
 	void ReleaseUploadBuffers();
 
-	virtual void ProcessInput(HWND hwnd) {};
+	virtual void ProcessInput(HWND hwnd, ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {};
 
 protected:
 	ShaderShared _shader;

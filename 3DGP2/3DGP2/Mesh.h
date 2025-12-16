@@ -26,6 +26,7 @@ public:
 
 public:
 	void SetTriangle(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, Vertex* vertices);
+	void SetTriangleTessellation(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, Vertex* vertices);
 
 	void ReleaseUploadBuffer();
 

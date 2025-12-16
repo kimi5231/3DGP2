@@ -89,7 +89,7 @@ TitleScene::~TitleScene()
 {
 }
 
-void TitleScene::ProcessInput(HWND hwnd)
+void TitleScene::ProcessInput(HWND hwnd, ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList)
 {
 	if (GetAsyncKeyState(VK_LBUTTON) & 0x0001)
 	{

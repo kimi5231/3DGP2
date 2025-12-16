@@ -389,7 +389,7 @@ void GameFramework::MoveToNextFrame()
 void GameFramework::ProcessInput()
 {
 	if (_scene)
-		_scene->ProcessInput(_hwnd);
+		_scene->ProcessInput(_hwnd, _device, _commandList);
 }
 
 void GameFramework::ChangeScene()
